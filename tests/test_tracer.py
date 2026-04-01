@@ -120,8 +120,8 @@ class TestSpanContextManager:
         trace_id = tracer.root_run["trace_id"]
         with tracer.span("outer") as outer_span:
             outer_run_id = outer_span.run["run_id"]
-            with tracer.span("inner") as inner_span:
-                inner_run_id = inner_span.run["run_id"]
+            with tracer.span("inner"):
+                pass
         runs = backend.get_runs_by_trace(trace_id)
         inner = next(r for r in runs if r["name"] == "inner")
         assert inner["parent_id"] == outer_run_id

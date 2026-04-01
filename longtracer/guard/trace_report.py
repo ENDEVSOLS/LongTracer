@@ -157,9 +157,9 @@ def _print_eval_claims(run: Optional[Dict], verbose: bool) -> None:
         cid = c.get("claim_id", "?")
         print(f"  {icon} {cid}: \"{text}\" ({conf:.2f})")
         if c.get("is_hallucination"):
-            print(f"      ⚠️  HALLUCINATION detected")
+            print("      ⚠️  HALLUCINATION detected")
         if c.get("is_meta_statement"):
-            print(f"      ℹ️  Meta-statement (honest uncertainty)")
+            print("      ℹ️  Meta-statement (honest uncertainty)")
     print()
 
 

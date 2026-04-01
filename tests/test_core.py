@@ -110,6 +110,11 @@ class TestAutoEnable:
 
     def test_auto_returns_instance_when_enabled(self, monkeypatch):
         monkeypatch.setenv("LONGTRACER_ENABLED", "true")
+        # Pre-init with memory backend so auto() doesn't try to create SQLite
+        LongTracer.init(backend="memory")
+        LongTracer.reset()
+        # Now auto() will use get_default_backend() — set env to use memory
+        monkeypatch.setenv("TRACE_CACHE_BACKEND", "memory")
         result = LongTracer.auto()
         assert result is not None
         assert LongTracer.is_enabled()

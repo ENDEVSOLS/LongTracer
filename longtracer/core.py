@@ -111,6 +111,10 @@ class LongTracer:
         )
         cls._default_project = resolved_name
 
+        # Ensure singleton instance exists
+        if cls._instance is None:
+            cls._instance = cls.__new__(cls)
+
         logger.info(
             "LongTracer initialized (project=%s, backend=%s, verbose=%s)",
             resolved_name, backend, verbose,
