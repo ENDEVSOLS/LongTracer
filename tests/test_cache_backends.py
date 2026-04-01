@@ -220,15 +220,15 @@ class TestSQLiteBackend:
     def test_disconnected_backend_returns_safe_defaults(self):
         """A backend that fails to connect returns safe empty values."""
         from unittest.mock import patch
-        # Patch sqlite3.connect to simulate a connection failure
-        with patch("sqlite3.connect", side_effect=Exception("simulated failure")):
-            backend = SQLiteBackend(path=":memory:")
-        # After failed init, is_connected should be False
-        if not backend.is_connected():
-            assert backend.get_trace("x") is None
-            assert backend.list_traces() == []
-            assert backend.get_runs_by_trace("x") == []
-            assert backend.update_run("x", {}) is False
+        # Patch both makedirs and sqlite3.connect to simulate a full connection failure
+        with patch("os.makedirs"), \
+             patch("sqlite3.connect", side_effect=Exception("simulated DB failure")):
+            backend = SQLiteBackend(path="/fake/path/traces.db")
+        assert not backend.is_connected()
+        assert backend.get_trace("x") is None
+        assert backend.list_traces() == []
+        assert backend.get_runs_by_trace("x") == []
+        assert backend.update_run("x", {}) is False
 
 
 # ── Factory tests ────────────────────────────────────────────────────

@@ -47,7 +47,7 @@ class HybridVerificationModel:
         except Exception as e:
             raise ImportError(
                 f"Failed to load STS model '{sts_model_name}'. "
-                f"Install with: pip install sentence-transformers>=5.0 "
+                "Install with: pip install sentence-transformers>=5.0 "
                 f"(Original error: {e})"
             ) from e
         if verbose:
@@ -61,7 +61,7 @@ class HybridVerificationModel:
         except Exception as e:
             raise ImportError(
                 f"Failed to load NLI model '{nli_model_name}'. "
-                f"Install with: pip install sentence-transformers>=5.0 "
+                "Install with: pip install sentence-transformers>=5.0 "
                 f"(Original error: {e})"
             ) from e
         if verbose:
