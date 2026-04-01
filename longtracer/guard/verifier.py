@@ -3,7 +3,7 @@ Citation Verifier - Main verification class with latency tracking.
 """
 
 from typing import List, Dict, Optional, TYPE_CHECKING
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from longtracer.guard.claim_splitter import split_into_claims
 from longtracer.guard.nli_model import HybridVerificationModel

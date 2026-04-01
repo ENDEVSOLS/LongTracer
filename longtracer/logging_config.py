@@ -6,7 +6,7 @@ Configures the 'longtracer' logger with optional verbose console output.
 
 import logging
 import sys
-from typing import Optional
+
 
 def configure_logging(level: str = "INFO", verbose: bool = False):
     """

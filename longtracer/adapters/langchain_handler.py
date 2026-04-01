@@ -12,7 +12,7 @@ Usage:
 
 import hashlib
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 from contextvars import ContextVar
 

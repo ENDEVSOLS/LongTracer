@@ -8,7 +8,7 @@ Optimization:
 
 import time
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import numpy as np
 from sentence_transformers import SentenceTransformer, CrossEncoder, util
 from longtracer.guard.claim_splitter import analyze_claim
