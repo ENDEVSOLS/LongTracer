@@ -1,4 +1,7 @@
-<h1 align="center">LongTracer</h1>
+<p align="center">
+  <img src="assets/logo.png" alt="LongTracer Logo" width="200"/>
+</p>
+
 
 <p align="center"><strong>RAG hallucination detection, multi-project tracing, and pluggable backends — all batteries included.</strong></p>
 
