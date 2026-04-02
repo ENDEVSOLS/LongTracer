@@ -1,9 +1,16 @@
-[![PyPI version](https://img.shields.io/pypi/v/longtracer.svg)](https://pypi.org/project/longtracer/)
-[![Python](https://img.shields.io/pypi/pyversions/longtracer.svg)](https://pypi.org/project/longtracer/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/ENDEVSOLS/LongTracer/actions/workflows/ci.yml/badge.svg)](https://github.com/ENDEVSOLS/LongTracer/actions/workflows/ci.yml)
+<h1 align="center">LongTracer</h1>
 
-# LongTracer
+<p align="center"><strong>RAG hallucination detection, multi-project tracing, and pluggable backends — all batteries included.</strong></p>
+
+<p align="center">
+<a href="https://pypi.org/project/longtracer/"><img src="https://img.shields.io/pypi/v/longtracer" alt="PyPI Version"></a>
+<a href="https://pepy.tech/project/longtracer"><img src="https://static.pepy.tech/badge/longtracer" alt="Total Downloads"></a>
+<a href="https://pepy.tech/project/longtracer"><img src="https://static.pepy.tech/badge/longtracer/month" alt="Monthly Downloads"></a>
+<a href="https://github.com/ENDEVSOLS/LongTracer/stargazers"><img src="https://img.shields.io/github/stars/ENDEVSOLS/LongTracer?style=flat" alt="GitHub Stars"></a>
+<a href="https://github.com/ENDEVSOLS/LongTracer/actions/workflows/ci.yml"><img src="https://github.com/ENDEVSOLS/LongTracer/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+<img src="https://img.shields.io/pypi/pyversions/longtracer" alt="Python Versions">
+<a href="https://github.com/ENDEVSOLS/LongTracer/blob/master/LICENSE"><img src="https://img.shields.io/github/license/ENDEVSOLS/LongTracer" alt="License"></a>
+</p>
 
 Detect hallucinations in LLM-generated responses. LongTracer verifies every claim against source documents using hybrid STS + NLI, works with any RAG framework, and traces the full verification pipeline.
 
