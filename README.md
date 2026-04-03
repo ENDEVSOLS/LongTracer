@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="LongTracer Logo" width="320"/>
+  <img src="https://raw.githubusercontent.com/ENDEVSOLS/LongTracer/main/assets/logo.png" alt="LongTracer Logo" width="320"/>
 </p>
 
 
