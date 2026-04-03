@@ -15,6 +15,13 @@
 <a href="https://github.com/ENDEVSOLS/LongTracer/blob/master/LICENSE"><img src="https://img.shields.io/github/license/ENDEVSOLS/LongTracer" alt="License"></a>
 </p>
 
+<p align="center">
+<a href="https://endevsols.github.io/LongTracer/"><strong>📖 Documentation</strong></a> &nbsp;·&nbsp;
+<a href="https://endevsols.github.io/LongTracer/getting-started/quickstart/"><strong>Quick Start</strong></a> &nbsp;·&nbsp;
+<a href="https://endevsols.github.io/LongTracer/api-reference/"><strong>API Reference</strong></a> &nbsp;·&nbsp;
+<a href="https://github.com/ENDEVSOLS/LongTracer/blob/main/CHANGELOG.md"><strong>Changelog</strong></a>
+</p>
+
 Detect hallucinations in LLM-generated responses. LongTracer verifies every claim against source documents using hybrid STS + NLI, works with any RAG framework, and traces the full verification pipeline.
 
 ## Quick Start
@@ -235,6 +242,19 @@ export_trace_json(tracer, filepath="trace.json")
 ## Demo Application
 
 The `examples/` directory contains a complete RAG demo using ChromaDB + Ollama. It is NOT part of the published PyPI package. See [examples/README.md](examples/README.md) for setup instructions.
+
+## Documentation
+
+Full documentation at **[endevsols.github.io/LongTracer](https://endevsols.github.io/LongTracer)**
+
+- [Installation](https://endevsols.github.io/LongTracer/getting-started/installation/)
+- [Quick Start](https://endevsols.github.io/LongTracer/getting-started/quickstart/)
+- [How It Works](https://endevsols.github.io/LongTracer/how-it-works/)
+- [LangChain Integration](https://endevsols.github.io/LongTracer/integrations/langchain/)
+- [LlamaIndex Integration](https://endevsols.github.io/LongTracer/integrations/llamaindex/)
+- [Haystack Integration](https://endevsols.github.io/LongTracer/integrations/haystack/)
+- [API Reference](https://endevsols.github.io/LongTracer/api-reference/)
+- [CLI Reference](https://endevsols.github.io/LongTracer/cli/)
 
 ## License
 
