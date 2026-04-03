@@ -1,5 +1,28 @@
 # Quick Start
 
+## 0. One-Liner Check (Fastest)
+
+No setup, no class instantiation:
+
+```python
+from longtracer import check
+
+result = check(
+    "The Eiffel Tower is 330 meters tall and located in Berlin.",
+    ["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."]
+)
+
+print(result.verdict)   # "FAIL"
+print(result.summary)   # "1/1 claims supported, 1 hallucination(s) detected."
+```
+
+Or from the command line:
+
+```bash
+longtracer check "The Eiffel Tower is in Berlin." "The Eiffel Tower is in Paris."
+# ✗ FAIL  trust=0.50  hallucinations=1
+```
+
 ## 1. Direct Verification
 
 The simplest usage — no setup required:
@@ -104,5 +127,6 @@ longtracer view --html <trace_id>      # export HTML report
 
 - [LangChain integration](../integrations/langchain.md)
 - [LlamaIndex integration](../integrations/llamaindex.md)
+- [Haystack integration](../integrations/haystack.md)
 - [Trace storage backends](../backends.md)
 - [CLI reference](../cli.md)

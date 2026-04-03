@@ -1,6 +1,46 @@
 # CLI Reference
 
-LongTracer installs a `longtracer` command for viewing and exporting traces.
+LongTracer installs a `longtracer` command for verification and trace inspection.
+
+## `longtracer check` — Verify from the command line
+
+```bash
+longtracer check "The Eiffel Tower is in Berlin." "The Eiffel Tower is in Paris."
+```
+
+Output:
+```
+✗ FAIL  trust=0.50  hallucinations=1
+  0/1 claims supported, 1 hallucination(s) detected.
+
+  ✗ The Eiffel Tower is in Berlin. [HALLUCINATION]
+    ↳ source: The Eiffel Tower is in Paris.
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--json` | Output results as JSON |
+| `--threshold 0.7` | Set verification threshold (default: 0.5) |
+
+### JSON output
+
+```bash
+longtracer check "response" "source" --json
+```
+
+```json
+{
+  "verdict": "FAIL",
+  "trust_score": 0.5,
+  "summary": "0/1 claims supported, 1 hallucination(s) detected.",
+  "hallucination_count": 1,
+  "claims": [...]
+}
+```
+
+---
 
 ## Commands
 

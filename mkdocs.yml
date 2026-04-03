@@ -67,6 +67,7 @@ nav:
   - Integrations:
     - LangChain: integrations/langchain.md
     - LlamaIndex: integrations/llamaindex.md
+    - Haystack: integrations/haystack.md
     - Direct API: integrations/direct-api.md
   - Trace Storage:
     - Backends: backends.md

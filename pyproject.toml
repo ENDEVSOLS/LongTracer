@@ -51,6 +51,9 @@ langchain = [
 llamaindex = [
     "llama-index-core>=0.10",
 ]
+haystack = [
+    "haystack-ai>=2.0",
+]
 mongo = [
     "pymongo>=4.6",
 ]
@@ -66,7 +69,7 @@ redis = [
     "redis>=4.0",
 ]
 all = [
-    "longtracer[langchain,llamaindex,mongo,chroma,postgres,redis]",
+    "longtracer[langchain,llamaindex,haystack,mongo,chroma,postgres,redis]",
 ]
 docs = [
     "mkdocs-material>=9.0",

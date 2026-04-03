@@ -173,6 +173,49 @@ def cmd_export_html(args):
     print(f"HTML report exported to: {out}")
 
 
+def cmd_check(args):
+    """Run a one-shot hallucination check from the CLI."""
+    import json as _json
+    from longtracer.guard.verifier import CitationVerifier
+
+    verifier = CitationVerifier(threshold=args.threshold)
+    result = verifier.verify_parallel(args.response, args.sources)
+
+    if args.json_output:
+        out = {
+            "verdict": result.verdict,
+            "trust_score": round(result.trust_score, 4),
+            "summary": result.summary,
+            "hallucination_count": result.hallucination_count,
+            "claims": [
+                {
+                    "claim": c.get("claim", ""),
+                    "supported": c.get("supported", False),
+                    "score": round(c.get("score", 0), 4),
+                    "is_hallucination": c.get("is_hallucination", False),
+                }
+                for c in result.claims
+            ],
+        }
+        print(_json.dumps(out, indent=2))
+        return
+
+    icon = "✓" if result.verdict == "PASS" else "✗"
+    print(
+        f"\n{icon} {result.verdict}  "
+        f"trust={result.trust_score:.2f}  "
+        f"hallucinations={result.hallucination_count}"
+    )
+    print(f"  {result.summary}\n")
+    for c in result.claims:
+        status = "✓" if c.get("supported") else "✗"
+        hall = " [HALLUCINATION]" if c.get("is_hallucination") else ""
+        print(f"  {status} {c.get('claim', '')[:100]}{hall}")
+        if c.get("best_source"):
+            print(f"    ↳ source: {c['best_source'][:80]}")
+    print()
+
+
 def main():
     _load_dotenv()
     parser = argparse.ArgumentParser(
@@ -189,6 +232,15 @@ def main():
     vp.add_argument("--project", "-p", help="Filter by project name")
     vp.add_argument("--limit", type=int, default=10, help="Max traces to list")
 
+    # check subcommand
+    cp = sub.add_parser("check", help="Verify a response against sources")
+    cp.add_argument("response", help="LLM response text to verify")
+    cp.add_argument("sources", nargs="+", help="Source text(s) to verify against")
+    cp.add_argument("--json", dest="json_output", action="store_true",
+                     help="Output results as JSON")
+    cp.add_argument("--threshold", type=float, default=0.5,
+                     help="Verification threshold (default: 0.5)")
+
     args = parser.parse_args()
     if args.command is None:
         args.command = "view"
@@ -196,7 +248,9 @@ def main():
         args.limit = 10
         args.last = False
 
-    if args.command == "view":
+    if args.command == "check":
+        cmd_check(args)
+    elif args.command == "view":
         if args.id:
             cmd_view(args)
         elif args.last:
