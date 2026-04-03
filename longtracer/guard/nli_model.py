@@ -8,7 +8,7 @@ Optimization:
 
 import time
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import numpy as np
 from sentence_transformers import SentenceTransformer, CrossEncoder, util
 from longtracer.guard.claim_splitter import analyze_claim
@@ -47,7 +47,7 @@ class HybridVerificationModel:
         except Exception as e:
             raise ImportError(
                 f"Failed to load STS model '{sts_model_name}'. "
-                "Install with: pip install sentence-transformers>=5.0 "
+                f"Install with: pip install sentence-transformers>=5.0 "
                 f"(Original error: {e})"
             ) from e
         if verbose:
@@ -61,7 +61,7 @@ class HybridVerificationModel:
         except Exception as e:
             raise ImportError(
                 f"Failed to load NLI model '{nli_model_name}'. "
-                "Install with: pip install sentence-transformers>=5.0 "
+                f"Install with: pip install sentence-transformers>=5.0 "
                 f"(Original error: {e})"
             ) from e
         if verbose:
@@ -182,7 +182,9 @@ class HybridVerificationModel:
         else:
             self.latency_log["nli_skipped"] += 1
 
-        is_supported = (avg_score >= self.support_threshold) or (nli_ran and entailment_score > 0.5)
+        is_supported = (
+            (avg_score >= self.support_threshold) or (nli_ran and entailment_score > 0.5)
+        ) and not (nli_ran and max_contradiction > 0.5)
 
         match_score_is_low_and_no_nli_rescue = not nli_ran or entailment_score < 0.3
         is_meta_statement = claim_analysis["is_meta_statement"]
@@ -346,7 +348,9 @@ class HybridVerificationModel:
                 max_contradiction = 0.0
                 entailment_score = 0.0
 
-            is_supported = (avg_score >= self.support_threshold) or (nli_ran and entailment_score > 0.5)
+            is_supported = (
+                (avg_score >= self.support_threshold) or (nli_ran and entailment_score > 0.5)
+            ) and not (nli_ran and max_contradiction > 0.5)
 
             match_score_is_low_and_no_nli_rescue = not nli_ran or entailment_score < 0.3
             is_meta_statement = analysis["is_meta_statement"]

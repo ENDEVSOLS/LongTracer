@@ -65,7 +65,9 @@ def normalize_node(node) -> Dict[str, Any]:
     return result
 
 
-class CitationGuardLlamaIndexHandler:
+from llama_index.core.callbacks.base_handler import BaseCallbackHandler
+
+class CitationGuardLlamaIndexHandler(BaseCallbackHandler):
     """
     LlamaIndex callback handler for LongTracer tracing.
 
@@ -74,7 +76,21 @@ class CitationGuardLlamaIndexHandler:
     """
 
     def __init__(self):
+        super().__init__(
+            event_starts_to_ignore=[],
+            event_ends_to_ignore=[],
+        )
         self._event_starts = {}
+
+    def start_trace(self, trace_id: Optional[str] = None) -> None:
+        pass
+
+    def end_trace(
+        self,
+        trace_id: Optional[str] = None,
+        trace_map: Optional[Dict[str, List[str]]] = None,
+    ) -> None:
+        pass
 
     def on_event_start(
         self,
