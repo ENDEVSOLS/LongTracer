@@ -12,7 +12,8 @@ Usage:
 
 import hashlib
 import logging
-from typing import Any, Dict, List, Optional
+import time
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 from contextvars import ContextVar
 
@@ -46,6 +47,8 @@ def _get_state() -> Dict[str, Any]:
             "root_run_id": None,
             "retrieval_ms": 0,
             "llm_ms": 0,
+            "retriever_start_time": None,
+            "llm_start_time": None,
         }
         _run_state_var.set(state)
     return state
@@ -151,6 +154,18 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
 
         _reset_state()
 
+    def on_retriever_start(
+        self,
+        serialized: Dict[str, Any],
+        query: str,
+        *,
+        run_id: UUID,
+        parent_run_id: Optional[UUID] = None,
+        **kwargs: Any,
+    ) -> None:
+        state = _get_state()
+        state["retriever_start_time"] = time.time()
+
     def on_retriever_end(
         self,
         documents: List[Document],
@@ -162,6 +177,10 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
         state = _get_state()
         tracer = LongTracer.get_tracer()
 
+        retriever_duration_ms = 0
+        if state.get("retriever_start_time"):
+            retriever_duration_ms = (time.time() - state["retriever_start_time"]) * 1000
+
         normalized = [normalize_doc(doc) for doc in documents]
         state["chunks"].extend(normalized)
 
@@ -171,6 +190,9 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
                     "chunks": normalized,
                     "count": len(normalized),
                 })
+                span_run_id = span.run["run_id"]
+            if retriever_duration_ms > 0:
+                tracer._safe_update_run(span_run_id, {"duration_ms": retriever_duration_ms})
 
             if LongTracer.is_verbose():
                 log_span("retrieval", chunks=len(normalized))
@@ -186,6 +208,7 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
     ) -> None:
         state = _get_state()
         state["prompts"].extend(prompts)
+        state["llm_start_time"] = time.time()
 
         tracer = LongTracer.get_tracer()
         if tracer and LongTracer.is_enabled():
@@ -210,6 +233,10 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
         state = _get_state()
         tracer = LongTracer.get_tracer()
 
+        llm_duration_ms = 0
+        if state.get("llm_start_time"):
+            llm_duration_ms = (time.time() - state["llm_start_time"]) * 1000
+
         text = ""
         if response.generations:
             text = response.generations[0][0].text if response.generations[0] else ""
@@ -226,6 +253,9 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
                     "answer": text[:1000],
                     "model": model,
                 })
+                span_run_id = span.run["run_id"]
+            if llm_duration_ms > 0:
+                tracer._safe_update_run(span_run_id, {"duration_ms": llm_duration_ms})
 
             if LongTracer.is_verbose():
                 log_span("llm_call", model=model, answer_len=len(text))
@@ -248,8 +278,10 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
             source_texts = [c.get("text", "") for c in chunks]
             source_metadata = [c.get("metadata", {}) for c in chunks]
 
+            verify_start = time.time()
             verifier = CitationVerifier()
             result = verifier.verify_parallel(answer, source_texts, source_metadata=source_metadata)
+            verify_duration_ms = (time.time() - verify_start) * 1000
 
             claims_data = []
             for i, claim in enumerate(result.claims):
@@ -266,11 +298,14 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
                     "claims": claims_data,
                     "total_claims": len(claims_data),
                 })
+                span_run_id = span.run["run_id"]
+            tracer._safe_update_run(span_run_id, {"duration_ms": verify_duration_ms})
 
             if LongTracer.is_verbose():
                 supported = sum(1 for c in claims_data if c["status"] == "supported")
                 log_span("eval_claims", total=len(claims_data), supported=supported)
 
+            grounding_start = time.time()
             hallucinated = [
                 c["claim_id"] for c in claims_data if c["is_hallucination"]
             ]
@@ -279,6 +314,7 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
                 flags.append("HALLUCINATION")
             if result.trust_score < 0.5:
                 flags.append("LOW_TRUST")
+            grounding_duration_ms = (time.time() - grounding_start) * 1000
 
             with tracer.span("grounding", run_type="chain") as span:
                 span.set_output({
@@ -288,6 +324,8 @@ class CitationGuardCallbackHandler(BaseCallbackHandler):
                     "flags_triggered": flags,
                     "verdict": "PASS" if not flags else "FAIL",
                 })
+                span_run_id = span.run["run_id"]
+            tracer._safe_update_run(span_run_id, {"duration_ms": grounding_duration_ms})
 
             if LongTracer.is_verbose():
                 log_span(
