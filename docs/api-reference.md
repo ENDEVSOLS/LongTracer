@@ -175,6 +175,15 @@ Reset all state. Useful in tests.
 
 Attaches verification to a LangChain chain.
 
+### `instrument_langgraph(graph, threshold=0.5, verbose=None)`
+
+Creates a `LongTracerAgentHandler` for LangGraph agents. Returns the handler
+to pass via `config={"callbacks": [handler]}`.
+
+### `instrument_langchain_agent(agent_executor, threshold=0.5, verbose=None)`
+
+Attaches verification to a LangChain `AgentExecutor`.
+
 ### `instrument_llamaindex(query_engine, verbose=None)`
 
 Attaches verification to a LlamaIndex query engine.
@@ -182,6 +191,19 @@ Attaches verification to a LlamaIndex query engine.
 ### `instrument_haystack(pipeline, verbose=None)`
 
 Adds `LongTracerVerifier` component to a Haystack v2 pipeline.
+
+---
+
+## LongTracerAgentHandler
+
+For direct usage with any LangChain/LangGraph Runnable:
+
+```python
+from longtracer.adapters.langgraph_handler import LongTracerAgentHandler
+
+handler = LongTracerAgentHandler(threshold=0.5, verbose=True)
+result = runnable.invoke(input, config={"callbacks": [handler]})
+```
 
 ---
 
