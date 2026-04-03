@@ -56,6 +56,18 @@ def instrument_haystack(pipeline, verbose=None):
     return _impl(pipeline, verbose=verbose)
 
 
+def instrument_langgraph(graph, threshold=0.5, verbose=None):
+    """Lazy-loaded LangGraph agent adapter."""
+    from longtracer.adapters.langgraph_handler import instrument_langgraph as _impl
+    return _impl(graph, threshold=threshold, verbose=verbose)
+
+
+def instrument_langchain_agent(agent_executor, threshold=0.5, verbose=None):
+    """Lazy-loaded LangChain AgentExecutor adapter."""
+    from longtracer.adapters.langgraph_handler import instrument_langchain_agent as _impl
+    return _impl(agent_executor, threshold=threshold, verbose=verbose)
+
+
 # Backward compatibility
 CitationGuard = LongTracer
 
@@ -66,6 +78,8 @@ __all__ = [
     "VerificationResult",
     "check",
     "instrument_langchain",
+    "instrument_langchain_agent",
+    "instrument_langgraph",
     "instrument_llamaindex",
     "instrument_haystack",
 ]

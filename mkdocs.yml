@@ -66,6 +66,7 @@ nav:
   - How It Works: how-it-works.md
   - Integrations:
     - LangChain: integrations/langchain.md
+    - LangGraph & Agents: integrations/langgraph.md
     - LlamaIndex: integrations/llamaindex.md
     - Haystack: integrations/haystack.md
     - Direct API: integrations/direct-api.md

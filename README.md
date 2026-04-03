@@ -130,6 +130,31 @@ pipeline.connect("generator.replies", "verifier.response")
 pipeline.connect("retriever.documents", "verifier.documents")
 ```
 
+### LangGraph Agents
+
+```bash
+pip install "longtracer[langgraph]"
+```
+
+```python
+from longtracer import instrument_langgraph
+
+handler = instrument_langgraph(graph)
+result = agent.invoke(
+    {"messages": [("user", "What is X?")]},
+    config={"callbacks": [handler]}
+)
+```
+
+### LangChain Agents
+
+```python
+from longtracer import instrument_langchain_agent
+
+handler = instrument_langchain_agent(agent_executor)
+result = agent_executor.invoke({"input": "What is X?"})
+```
+
 ### Async Support
 
 ```python
@@ -220,6 +245,7 @@ export_trace_json(tracer, filepath="trace.json")
 | `langchain` | `pip install "longtracer[langchain]"` | LangChain callback adapter |
 | `llamaindex` | `pip install "longtracer[llamaindex]"` | LlamaIndex event adapter |
 | `haystack` | `pip install "longtracer[haystack]"` | Haystack v2 component adapter |
+| `langgraph` | `pip install "longtracer[langgraph]"` | LangGraph & LangChain agent tracing |
 | `mongo` | `pip install "longtracer[mongo]"` | MongoDB trace backend |
 | `postgres` | `pip install "longtracer[postgres]"` | PostgreSQL trace backend |
 | `redis` | `pip install "longtracer[redis]"` | Redis trace backend |
@@ -251,6 +277,7 @@ Full documentation at **[endevsols.github.io/LongTracer](https://endevsols.githu
 - [Quick Start](https://endevsols.github.io/LongTracer/getting-started/quickstart/)
 - [How It Works](https://endevsols.github.io/LongTracer/how-it-works/)
 - [LangChain Integration](https://endevsols.github.io/LongTracer/integrations/langchain/)
+- [LangGraph & Agent Integration](https://endevsols.github.io/LongTracer/integrations/langgraph/)
 - [LlamaIndex Integration](https://endevsols.github.io/LongTracer/integrations/llamaindex/)
 - [Haystack Integration](https://endevsols.github.io/LongTracer/integrations/haystack/)
 - [API Reference](https://endevsols.github.io/LongTracer/api-reference/)
