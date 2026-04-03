@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.1] - 2025-04-03
+## [0.1.2] - 2025-04-03
 
 ### Added
 - `check()` one-liner function — verify without class instantiation
@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Pages deployment workflow (`docs.yml`)
 - Issue templates: Bug Report, Feature Request, Integration Request
 - Release notes categorization (`.github/release.yml`)
+
+## [0.1.1] - 2025-04-03
+
+### Added
 - Auto-tag and GitHub Release CI workflow (`auto-tag.yml`)
 - Hi-res logo in `assets/` folder
 

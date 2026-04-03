@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "longtracer"
-version = "0.1.1"
+version = "0.1.2"
 description = "RAG verification guardrails — detect hallucinations in LLM responses using hybrid STS + NLI."
 readme = "README.md"
 requires-python = ">=3.10"
