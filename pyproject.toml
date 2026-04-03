@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "longtracer"
-version = "0.1.1"
+version = "0.1.2"
 description = "RAG verification guardrails — detect hallucinations in LLM responses using hybrid STS + NLI."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,7 +12,7 @@ license = {text = "MIT"}
 authors = [
     {name = "ENDEVSOLS"},
 ]
-keywords = ["rag", "llm", "verification", "hallucination", "nli", "citation", "tracing", "guardrails"]
+keywords = ["rag", "llm", "verification", "hallucination", "nli", "citation", "tracing", "guardrails", "langchain", "llamaindex", "observability", "grounding", "ai-safety", "claim-verification", "sentence-transformers", "deberta"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -38,7 +38,7 @@ longtracer = "longtracer.cli:main"
 
 [project.urls]
 Repository = "https://github.com/ENDEVSOLS/LongTracer"
-Documentation = "https://github.com/ENDEVSOLS/LongTracer#readme"
+Documentation = "https://endevsols.github.io/LongTracer"
 Changelog = "https://github.com/ENDEVSOLS/LongTracer/blob/main/CHANGELOG.md"
 "Bug Tracker" = "https://github.com/ENDEVSOLS/LongTracer/issues"
 
@@ -50,6 +50,9 @@ langchain = [
 ]
 llamaindex = [
     "llama-index-core>=0.10",
+]
+haystack = [
+    "haystack-ai>=2.0",
 ]
 mongo = [
     "pymongo>=4.6",
@@ -66,7 +69,11 @@ redis = [
     "redis>=4.0",
 ]
 all = [
-    "longtracer[langchain,llamaindex,mongo,chroma,postgres,redis]",
+    "longtracer[langchain,llamaindex,haystack,mongo,chroma,postgres,redis]",
+]
+docs = [
+    "mkdocs-material>=9.0",
+    "mkdocstrings[python]>=0.24",
 ]
 
 [tool.hatch.build.targets.wheel]

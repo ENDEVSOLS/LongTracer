@@ -23,21 +23,42 @@ Detect hallucinations in LLM-generated responses. LongTracer verifies every clai
 pip install longtracer
 ```
 
+### One-Liner (fastest)
+
+```python
+from longtracer import check
+
+result = check(
+    "The Eiffel Tower is 330 meters tall and located in Berlin.",
+    ["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."]
+)
+
+print(result.verdict)             # "FAIL"
+print(result.trust_score)         # 0.0 - 1.0
+print(result.hallucination_count) # 1 ("Berlin" contradicts "Paris")
+print(result.summary)             # "0/1 claims supported, 1 hallucination(s) detected."
+```
+
+### CLI (no Python needed)
+
+```bash
+longtracer check "The Eiffel Tower is in Berlin." "The Eiffel Tower is in Paris."
+# ✗ FAIL  trust=0.50  hallucinations=1
+```
+
+### Full API
+
 ```python
 from longtracer import CitationVerifier
 
-verifier = CitationVerifier()
+verifier = CitationVerifier(cache=True)  # optional result caching
 result = verifier.verify_parallel(
     response="The Eiffel Tower is 330 meters tall and located in Berlin.",
     sources=["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."]
 )
-
-print(result.trust_score)         # 0.0 - 1.0
-print(result.hallucination_count) # 1 ("Berlin" contradicts "Paris")
-print(result.all_supported)       # False
 ```
 
-That's it. No vector store dependency, no LLM dependency. Just strings in, verification out.
+No vector store dependency. No LLM dependency. Just strings in, verification out.
 
 ## How It Works
 
@@ -86,6 +107,26 @@ result = verifier.verify_parallel(
     sources=["chunk 1 text", "chunk 2 text"],
     source_metadata=[{"source": "doc.pdf", "page": 1}, {"source": "doc.pdf", "page": 2}]
 )
+```
+
+### Haystack v2
+
+```bash
+pip install "longtracer[haystack]"
+```
+
+```python
+from longtracer.adapters.haystack_handler import LongTracerVerifier
+
+pipeline.add_component("verifier", LongTracerVerifier())
+pipeline.connect("generator.replies", "verifier.response")
+pipeline.connect("retriever.documents", "verifier.documents")
+```
+
+### Async Support
+
+```python
+result = await verifier.verify_parallel_async(response, sources)
 ```
 
 Works with Haystack, custom pipelines, or any code that produces strings.
@@ -171,6 +212,7 @@ export_trace_json(tracer, filepath="trace.json")
 |-------|---------|-------------|
 | `langchain` | `pip install "longtracer[langchain]"` | LangChain callback adapter |
 | `llamaindex` | `pip install "longtracer[llamaindex]"` | LlamaIndex event adapter |
+| `haystack` | `pip install "longtracer[haystack]"` | Haystack v2 component adapter |
 | `mongo` | `pip install "longtracer[mongo]"` | MongoDB trace backend |
 | `postgres` | `pip install "longtracer[postgres]"` | PostgreSQL trace backend |
 | `redis` | `pip install "longtracer[redis]"` | Redis trace backend |
