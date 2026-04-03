@@ -1,0 +1,81 @@
+# CLI Reference
+
+LongTracer installs a `longtracer` command for viewing and exporting traces.
+
+## Commands
+
+### `longtracer view`
+
+List recent traces:
+
+```bash
+longtracer view
+longtracer view --limit 20
+longtracer view --project chatbot-prod
+```
+
+### View a specific trace
+
+```bash
+longtracer view --id <trace_id>
+```
+
+### View the most recent trace
+
+```bash
+longtracer view --last
+```
+
+### Export to JSON
+
+```bash
+longtracer view --export <trace_id>
+# Saves to trace_<id>.json
+```
+
+### Export to HTML report
+
+```bash
+longtracer view --html <trace_id>
+# Saves to trace_<id>.html — open in any browser
+```
+
+---
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--id <trace_id>` | View a specific trace by ID |
+| `--last` | View the most recent trace |
+| `--project <name>` | Filter traces by project name |
+| `--limit N` | Max number of traces to list (default: 10) |
+| `--export <trace_id>` | Export trace to JSON file |
+| `--html <trace_id>` | Export trace to self-contained HTML report |
+
+---
+
+## HTML Report
+
+The HTML report is a self-contained single file with:
+
+- Summary cards: verdict, trust score, total duration, claim count
+- Waterfall timeline of all pipeline spans
+- Per-claim verification table with scores and source evidence
+- No external dependencies — works offline
+
+```bash
+longtracer view --html abc123
+open trace_abc123.html
+```
+
+---
+
+## Environment Variables
+
+The CLI respects the same environment variables as the SDK:
+
+```bash
+TRACE_CACHE_BACKEND=sqlite longtracer view
+TRACE_PROJECT=chatbot-prod longtracer view
+```

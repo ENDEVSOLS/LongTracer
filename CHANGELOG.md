@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-04-03
+
+### Added
+- Auto-tag and GitHub Release CI workflow (`auto-tag.yml`)
+- MkDocs documentation site with Material theme
+- GitHub Pages deployment workflow (`docs.yml`)
+- Issue templates: Bug Report, Feature Request, Integration Request
+- Release notes categorization (`.github/release.yml`)
+- Hi-res logo in `assets/` folder
+
+### Changed
+- README header updated with centered logo and badge layout
+- `pyproject.toml` keywords expanded for better PyPI discoverability
+- Documentation URL updated to GitHub Pages site
+
 ## [0.1.0] - 2025-04-01
 
 ### Added

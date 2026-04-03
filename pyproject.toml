@@ -12,7 +12,7 @@ license = {text = "MIT"}
 authors = [
     {name = "ENDEVSOLS"},
 ]
-keywords = ["rag", "llm", "verification", "hallucination", "nli", "citation", "tracing", "guardrails"]
+keywords = ["rag", "llm", "verification", "hallucination", "nli", "citation", "tracing", "guardrails", "langchain", "llamaindex", "observability", "grounding", "ai-safety", "claim-verification", "sentence-transformers", "deberta"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -38,7 +38,7 @@ longtracer = "longtracer.cli:main"
 
 [project.urls]
 Repository = "https://github.com/ENDEVSOLS/LongTracer"
-Documentation = "https://github.com/ENDEVSOLS/LongTracer#readme"
+Documentation = "https://endevsols.github.io/LongTracer"
 Changelog = "https://github.com/ENDEVSOLS/LongTracer/blob/main/CHANGELOG.md"
 "Bug Tracker" = "https://github.com/ENDEVSOLS/LongTracer/issues"
 
@@ -67,6 +67,10 @@ redis = [
 ]
 all = [
     "longtracer[langchain,llamaindex,mongo,chroma,postgres,redis]",
+]
+docs = [
+    "mkdocs-material>=9.0",
+    "mkdocstrings[python]>=0.24",
 ]
 
 [tool.hatch.build.targets.wheel]
