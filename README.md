@@ -1,4 +1,7 @@
-<h1 align="center">LongTracer</h1>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ENDEVSOLS/LongTracer/main/assets/logo.png" alt="LongTracer Logo" width="320"/>
+</p>
+
 
 <p align="center"><strong>RAG hallucination detection, multi-project tracing, and pluggable backends — all batteries included.</strong></p>
 
@@ -12,6 +15,13 @@
 <a href="https://github.com/ENDEVSOLS/LongTracer/blob/master/LICENSE"><img src="https://img.shields.io/github/license/ENDEVSOLS/LongTracer" alt="License"></a>
 </p>
 
+<p align="center">
+<a href="https://endevsols.github.io/LongTracer/"><strong>📖 Documentation</strong></a> &nbsp;·&nbsp;
+<a href="https://endevsols.github.io/LongTracer/getting-started/quickstart/"><strong>Quick Start</strong></a> &nbsp;·&nbsp;
+<a href="https://endevsols.github.io/LongTracer/api-reference/"><strong>API Reference</strong></a> &nbsp;·&nbsp;
+<a href="https://github.com/ENDEVSOLS/LongTracer/blob/main/CHANGELOG.md"><strong>Changelog</strong></a>
+</p>
+
 Detect hallucinations in LLM-generated responses. LongTracer verifies every claim against source documents using hybrid STS + NLI, works with any RAG framework, and traces the full verification pipeline.
 
 ## Quick Start
@@ -20,21 +30,42 @@ Detect hallucinations in LLM-generated responses. LongTracer verifies every clai
 pip install longtracer
 ```
 
+### One-Liner (fastest)
+
+```python
+from longtracer import check
+
+result = check(
+    "The Eiffel Tower is 330 meters tall and located in Berlin.",
+    ["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."]
+)
+
+print(result.verdict)             # "FAIL"
+print(result.trust_score)         # 0.0 - 1.0
+print(result.hallucination_count) # 1 ("Berlin" contradicts "Paris")
+print(result.summary)             # "0/1 claims supported, 1 hallucination(s) detected."
+```
+
+### CLI (no Python needed)
+
+```bash
+longtracer check "The Eiffel Tower is in Berlin." "The Eiffel Tower is in Paris."
+# ✗ FAIL  trust=0.50  hallucinations=1
+```
+
+### Full API
+
 ```python
 from longtracer import CitationVerifier
 
-verifier = CitationVerifier()
+verifier = CitationVerifier(cache=True)  # optional result caching
 result = verifier.verify_parallel(
     response="The Eiffel Tower is 330 meters tall and located in Berlin.",
     sources=["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."]
 )
-
-print(result.trust_score)         # 0.0 - 1.0
-print(result.hallucination_count) # 1 ("Berlin" contradicts "Paris")
-print(result.all_supported)       # False
 ```
 
-That's it. No vector store dependency, no LLM dependency. Just strings in, verification out.
+No vector store dependency. No LLM dependency. Just strings in, verification out.
 
 ## How It Works
 
@@ -83,6 +114,51 @@ result = verifier.verify_parallel(
     sources=["chunk 1 text", "chunk 2 text"],
     source_metadata=[{"source": "doc.pdf", "page": 1}, {"source": "doc.pdf", "page": 2}]
 )
+```
+
+### Haystack v2
+
+```bash
+pip install "longtracer[haystack]"
+```
+
+```python
+from longtracer.adapters.haystack_handler import LongTracerVerifier
+
+pipeline.add_component("verifier", LongTracerVerifier())
+pipeline.connect("generator.replies", "verifier.response")
+pipeline.connect("retriever.documents", "verifier.documents")
+```
+
+### LangGraph Agents
+
+```bash
+pip install "longtracer[langgraph]"
+```
+
+```python
+from longtracer import instrument_langgraph
+
+handler = instrument_langgraph(graph)
+result = agent.invoke(
+    {"messages": [("user", "What is X?")]},
+    config={"callbacks": [handler]}
+)
+```
+
+### LangChain Agents
+
+```python
+from longtracer import instrument_langchain_agent
+
+handler = instrument_langchain_agent(agent_executor)
+result = agent_executor.invoke({"input": "What is X?"})
+```
+
+### Async Support
+
+```python
+result = await verifier.verify_parallel_async(response, sources)
 ```
 
 Works with Haystack, custom pipelines, or any code that produces strings.
@@ -168,6 +244,8 @@ export_trace_json(tracer, filepath="trace.json")
 |-------|---------|-------------|
 | `langchain` | `pip install "longtracer[langchain]"` | LangChain callback adapter |
 | `llamaindex` | `pip install "longtracer[llamaindex]"` | LlamaIndex event adapter |
+| `haystack` | `pip install "longtracer[haystack]"` | Haystack v2 component adapter |
+| `langgraph` | `pip install "longtracer[langgraph]"` | LangGraph & LangChain agent tracing |
 | `mongo` | `pip install "longtracer[mongo]"` | MongoDB trace backend |
 | `postgres` | `pip install "longtracer[postgres]"` | PostgreSQL trace backend |
 | `redis` | `pip install "longtracer[redis]"` | Redis trace backend |
@@ -190,6 +268,20 @@ export_trace_json(tracer, filepath="trace.json")
 ## Demo Application
 
 The `examples/` directory contains a complete RAG demo using ChromaDB + Ollama. It is NOT part of the published PyPI package. See [examples/README.md](examples/README.md) for setup instructions.
+
+## Documentation
+
+Full documentation at **[endevsols.github.io/LongTracer](https://endevsols.github.io/LongTracer)**
+
+- [Installation](https://endevsols.github.io/LongTracer/getting-started/installation/)
+- [Quick Start](https://endevsols.github.io/LongTracer/getting-started/quickstart/)
+- [How It Works](https://endevsols.github.io/LongTracer/how-it-works/)
+- [LangChain Integration](https://endevsols.github.io/LongTracer/integrations/langchain/)
+- [LangGraph & Agent Integration](https://endevsols.github.io/LongTracer/integrations/langgraph/)
+- [LlamaIndex Integration](https://endevsols.github.io/LongTracer/integrations/llamaindex/)
+- [Haystack Integration](https://endevsols.github.io/LongTracer/integrations/haystack/)
+- [API Reference](https://endevsols.github.io/LongTracer/api-reference/)
+- [CLI Reference](https://endevsols.github.io/LongTracer/cli/)
 
 ## License
 
