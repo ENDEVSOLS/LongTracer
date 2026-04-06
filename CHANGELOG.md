@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-04-06
+
+### Added
+- Advanced SLM fallback verifier (`Qwen2.5-1.5B-Instruct-GGUF`) to resolve numeric approximations and date contradiction ambiguities.
+- Automatic gating logic to dynamically invoke SLM only for tricky numeric/date claims, keeping baseline latency under 150ms. 
+- Optional `slm` extra dependencies (`llama-cpp-python` and `huggingface-hub`) in `pyproject.toml`.
+
+### Fixed
+- Fatal `TypeError` crash in `LangGraph` integration.
+- Extraneous stdout logging from dependencies that was polluting pure JSON output during CLI runs.
+- Claim splitter defect preventing sentence arrays < 500 chars from being split, leading to true positives masking false positives during validation.
+
 ## [0.1.3] - 2025-04-03
 
 ### Added
@@ -72,3 +84,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `store.py` collection_name parameter passthrough
 - `context_relevance.py` duplicate chunk ID lookup
 - SQLite trace backend thread safety with WAL mode
+
