@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "longtracer"
-version = "0.1.3"
+version = "0.1.4"
 description = "RAG verification guardrails — detect hallucinations in LLM responses using hybrid STS + NLI."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -72,8 +72,12 @@ postgres = [
 redis = [
     "redis>=4.0",
 ]
+slm = [
+    "llama-cpp-python>=0.3",
+    "huggingface-hub>=0.20",
+]
 all = [
-    "longtracer[langchain,llamaindex,haystack,langgraph,mongo,chroma,postgres,redis]",
+    "longtracer[langchain,llamaindex,haystack,langgraph,mongo,chroma,postgres,redis,slm]",
 ]
 docs = [
     "mkdocs-material>=9.0",

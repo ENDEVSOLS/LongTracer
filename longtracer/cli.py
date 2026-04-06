@@ -176,10 +176,22 @@ def cmd_export_html(args):
 def cmd_check(args):
     """Run a one-shot hallucination check from the CLI."""
     import json as _json
+    import sys as _sys
     from longtracer.guard.verifier import CitationVerifier
 
-    verifier = CitationVerifier(threshold=args.threshold)
-    result = verifier.verify_parallel(args.response, args.sources)
+    if args.json_output:
+        # Suppress model-loading progress bars that pollute JSON stdout
+        _orig_stdout = _sys.stdout
+        _sys.stdout = open(os.devnull, "w")
+        try:
+            verifier = CitationVerifier(threshold=args.threshold)
+            result = verifier.verify_parallel(args.response, args.sources)
+        finally:
+            _sys.stdout.close()
+            _sys.stdout = _orig_stdout
+    else:
+        verifier = CitationVerifier(threshold=args.threshold)
+        result = verifier.verify_parallel(args.response, args.sources)
 
     if args.json_output:
         out = {

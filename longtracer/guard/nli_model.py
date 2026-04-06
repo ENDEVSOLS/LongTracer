@@ -1,17 +1,21 @@
 """
-Hybrid Verification Model - Optimized Bi-Encoder STS + NLI.
+Hybrid Verification Model - Optimized Bi-Encoder STS + NLI + SLM Fallback.
 
-Optimization:
+Pipeline:
 - Step A: Fast Bi-Encoder (all-MiniLM-L6-v2) for Evidence Selection (O(N+M))
 - Step B: Cross-Encoder (DeBERTa) for Verification (O(1))
+- Step C: SLM Fallback (Qwen2.5-1.5B GGUF) for uncertain/numeric claims (~5-10%)
 """
 
 import time
 import re
+import logging
 from typing import Dict, List, Optional, Tuple
 import numpy as np
 from sentence_transformers import SentenceTransformer, CrossEncoder, util
 from longtracer.guard.claim_splitter import analyze_claim
+
+logger = logging.getLogger("longtracer")
 
 
 class HybridVerificationModel:
@@ -19,6 +23,7 @@ class HybridVerificationModel:
     Optimized hybrid verification.
     STS: Bi-Encoder (Fast, <100ms)
     NLI: Cross-Encoder (Accurate, ~150ms)
+    SLM: Generative fallback for uncertain/numeric claims (~200-400ms, ~5-10% of claims)
     """
 
     def __init__(
@@ -26,7 +31,8 @@ class HybridVerificationModel:
         sts_model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
         nli_model_name: str = "cross-encoder/nli-deberta-v3-xsmall",
         support_threshold: float = 0.40,
-        verbose: bool = True
+        verbose: bool = True,
+        use_slm: Optional[bool] = None,
     ):
         self.verbose = verbose
         self.support_threshold = support_threshold
@@ -66,6 +72,20 @@ class HybridVerificationModel:
             ) from e
         if verbose:
             print(f"     ✓ NLI loaded in {(time.time()-start)*1000:.0f}ms")
+
+        # Step C: SLM fallback (auto-detect or explicit)
+        self.slm_verifier = None
+        _slm_enabled = use_slm if use_slm is not None else None  # None = auto
+        if _slm_enabled is not False:
+            try:
+                from longtracer.guard.slm_verifier import is_slm_available, SLMVerifier
+                if _slm_enabled or is_slm_available():
+                    self.slm_verifier = SLMVerifier(verbose=verbose)
+                    if verbose:
+                        print("     ✓ SLM fallback enabled (auto-detected llama-cpp-python)")
+                    logger.info("SLM fallback enabled for uncertain/numeric claims")
+            except Exception:
+                pass  # SLM not available, continue without it
 
     def split_into_sentences(self, text: str) -> List[str]:
         """Split text into individual sentences."""
@@ -197,6 +217,17 @@ class HybridVerificationModel:
 
         if is_meta_statement:
             is_hallucination = False
+
+        # SLM fallback for uncertain or numeric claims
+        if self.slm_verifier and best_matching_source and nli_ran:
+            if self._slm_should_verify(claim, entailment_score, max_contradiction):
+                slm_result = self.slm_verifier.verify(claim, best_matching_source)
+                if "support" in slm_result.get("raw_output", ""):
+                    is_supported = True
+                    is_hallucination = False
+                else:
+                    is_supported = False
+                    is_hallucination = True
 
         return {
             "claim": claim,
@@ -364,6 +395,18 @@ class HybridVerificationModel:
             if is_meta_statement:
                 is_hallucination = False
 
+            # SLM fallback for uncertain or numeric claims
+            best_src = cr["best_matching_source"]
+            if self.slm_verifier and best_src and nli_ran:
+                if self._slm_should_verify(claim, entailment_score, max_contradiction):
+                    slm_result = self.slm_verifier.verify(claim, best_src)
+                    if "support" in slm_result.get("raw_output", ""):
+                        is_supported = True
+                        is_hallucination = False
+                    else:
+                        is_supported = False
+                        is_hallucination = True
+
             results.append({
                 "claim": claim,
                 "supported": is_supported,
@@ -382,6 +425,32 @@ class HybridVerificationModel:
             })
 
         return results
+
+    @staticmethod
+    def _slm_should_verify(claim: str, entailment: float, contradiction: float) -> bool:
+        """
+        Decide if a claim should be sent to the SLM fallback.
+
+        Only triggers for claims containing numbers/dates, where the NLI
+        cross-encoder is known to be unreliable:
+        1. Claim has numbers AND NLI says entailed (might be wrong year/amount)
+        2. Claim has numbers AND NLI says contradicted (might be valid approximation)
+        3. Claim has numbers AND NLI is uncertain (can't decide)
+        """
+        has_numbers = bool(re.search(r'\d{2,}', claim))
+        if not has_numbers:
+            return False
+
+        # NLI is uncertain on a numeric claim
+        is_uncertain = entailment < 0.5 and contradiction < 0.5
+
+        # NLI says entailed but might be wrong (e.g., wrong year)
+        suspicious_entailment = entailment > 0.5 and contradiction < 0.3
+
+        # NLI says contradicted but might be valid approximation
+        suspicious_contradiction = contradiction > 0.5
+
+        return is_uncertain or suspicious_entailment or suspicious_contradiction
 
     def _empty_result(self, claim, analysis):
         return {
@@ -420,6 +489,12 @@ class HybridVerificationModel:
         self.latency_log = {
             "sts_calls": 0, "nli_calls": 0, "sts_total_ms": 0.0, "nli_total_ms": 0.0, "nli_skipped": 0
         }
+
+    def get_slm_stats(self) -> Optional[Dict]:
+        """Return SLM fallback statistics, or None if SLM is not enabled."""
+        if self.slm_verifier:
+            return self.slm_verifier.get_stats()
+        return None
 
 
 # Backward compatibility
