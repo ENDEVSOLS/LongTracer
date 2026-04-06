@@ -182,8 +182,8 @@ if _LANGCHAIN_CORE_AVAILABLE:
                 state["root_run_id"] = str(run_id)
                 tracer = LongTracer.get_tracer() if LongTracer.is_enabled() else None
                 if tracer:
+                    tracer.run_name = "agent_execution"
                     tracer.start_root(
-                        run_name="agent_execution",
                         inputs={"run_id": str(run_id)},
                     )
 

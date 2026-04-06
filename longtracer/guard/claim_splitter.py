@@ -58,8 +58,8 @@ def split_into_claims(text: str) -> List[str]:
     text = text.strip()
     text = re.sub(r'\s+', ' ', text)
 
-    if len(text) < 500:
-        return [text] if len(text) > 10 else []
+    if len(text) <= 10:
+        return []
 
     protected = text
     protected = re.sub(r'(\d+)\.(\d+)', r'\1<DECIMAL>\2', protected)
