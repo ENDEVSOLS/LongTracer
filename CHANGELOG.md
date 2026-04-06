@@ -84,3 +84,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `store.py` collection_name parameter passthrough
 - `context_relevance.py` duplicate chunk ID lookup
 - SQLite trace backend thread safety with WAL mode
+
