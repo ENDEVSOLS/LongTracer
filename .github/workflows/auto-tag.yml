@@ -48,19 +48,17 @@ jobs:
         id: changelog
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          # Extract the section for this version from CHANGELOG.md
-          NOTES=$(python3 -c "
+          python3 - "$VERSION" <<'PYEOF'
           import re, sys
           version = sys.argv[1].lstrip('v')
           with open('CHANGELOG.md') as f:
               content = f.read()
-          # Match section between this version header and the next
-          pattern = rf'## \[{re.escape(version)}\].*?\n(.*?)(?=\n## \[|\Z)'
+          pattern = rf'## \[{re.escape(version)}\][^\n]*\n(.*?)(?=\n## \[|\Z)'
           match = re.search(pattern, content, re.DOTALL)
-          print(match.group(1).strip() if match else '')
-          " "$VERSION")
-          # Write to file to handle multiline safely
-          echo "$NOTES" > /tmp/release_notes.md
+          notes = match.group(1).strip() if match else f"Release {version}"
+          with open('/tmp/release_notes.md', 'w') as out:
+              out.write(notes)
+          PYEOF
 
       - name: Create GitHub Release
         if: steps.check_tag.outputs.exists == 'false'
