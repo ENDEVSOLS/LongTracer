@@ -71,6 +71,9 @@ class LongTracer:
         Can be called multiple times with different ``project_name`` values
         to set up multi-project tracing. All projects share the same backend.
 
+        Config priority (highest to lowest):
+            Code args > Environment variables > pyproject.toml > Built-in defaults
+
         Args:
             project_name: Name of the project (default: "default").
             backend: "auto", "mongo", "sqlite", "memory".
@@ -80,10 +83,25 @@ class LongTracer:
         Returns:
             The singleton LongTracer instance.
         """
+        from longtracer.config import load_config
+        cfg = load_config()
+
+        # Priority: code args > env vars > pyproject.toml > defaults
+        if project_name is None:
+            project_name = os.environ.get("LONGTRACER_PROJECT") or cfg.get("project")
+
+        if backend == "auto":
+            backend = os.environ.get("LONGTRACER_BACKEND") or cfg.get("backend", "auto")
+
         if verbose is None:
-            verbose = os.environ.get("LONGTRACER_VERBOSE", "").lower() == "true"
+            env_v = os.environ.get("LONGTRACER_VERBOSE")
+            if env_v is not None:
+                verbose = env_v.lower() == "true"
+            else:
+                verbose = cfg.get("verbose", False)
+
         if log_level is None:
-            log_level = os.environ.get("LONGTRACER_LOG_LEVEL", "INFO")
+            log_level = os.environ.get("LONGTRACER_LOG_LEVEL") or cfg.get("log_level", "INFO")
 
         cls._verbose = verbose
         cls._enabled = True

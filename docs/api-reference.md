@@ -1,18 +1,24 @@
 # API Reference
 
-## `check()` — One-Liner
+## `check()` and `check_batch()` — One-Liners
 
-The fastest way to verify a response:
+The fastest way to verify responses:
 
 ```python
-from longtracer import check
+from longtracer import check, check_batch
 
+# Single response
 result = check(
     "The Eiffel Tower is in Berlin.",
     ["The Eiffel Tower is in Paris, France."]
 )
 print(result.verdict)  # "FAIL"
-print(result.summary)  # "0/1 claims supported, 1 hallucination(s) detected."
+
+# Batch of responses (parallel)
+results = check_batch([
+    {"response": "Paris is in France.", "sources": ["Paris is in France."]},
+    {"response": "Water boils at 50C.", "sources": ["Water boils at 100C."]}
+])
 ```
 
 **Parameters:**
@@ -58,6 +64,19 @@ result = verifier.verify_parallel(
 
 ---
 
+### `verify_batch(items)`
+
+Verify a batch of responses in parallel (returns a list of `VerificationResult`).
+
+```python
+results = verifier.verify_batch([
+    {"response": "Paris is in France.", "sources": ["Paris is in France."]},
+    {"response": "Water boils at 50C.", "sources": ["Water boils at 100C."]}
+])
+```
+
+---
+
 ### `verify(response, sources, source_metadata=None)`
 
 Sequential (non-parallel) verification. Same signature.
@@ -73,6 +92,16 @@ result = await verifier.verify_parallel_async(response, sources)
 ```
 
 Use this in async frameworks (FastAPI, LangChain async, etc.).
+
+---
+
+### `verify_batch_async(items)`
+
+Async wrapper for batch verification.
+
+```python
+results = await verifier.verify_batch_async(items)
+```
 
 ---
 
@@ -140,11 +169,24 @@ verifier.verify_parallel(response="ok", sources=[123])
 
 ---
 
-## LongTracer
+## Configuration
 
-Singleton for global configuration and multi-project tracing.
+### `pyproject.toml` (Recommended)
+
+LongTracer automatically loads defaults from your `pyproject.toml`:
+
+```toml
+[tool.longtracer]
+project = "my-rag-app"
+backend = "sqlite"
+threshold = 0.5
+verbose = true
+log_level = "INFO"
+```
 
 ### `LongTracer.init()`
+
+Override configuration programmatically:
 
 ```python
 LongTracer.init(

@@ -38,6 +38,32 @@ def check(
     return verifier.verify_parallel(response, sources, source_metadata)
 
 
+def check_batch(
+    items: list[dict],
+    threshold: float = 0.5,
+    max_workers: int = 4,
+) -> list[VerificationResult]:
+    """One-liner batch hallucination check — verify multiple responses at once.
+
+    Args:
+        items: List of dicts, each with "response" (str) and "sources" (list[str]).
+        threshold: Verification threshold (default 0.5).
+        max_workers: Max parallel workers (default 4).
+
+    Returns:
+        List of VerificationResult, one per item.
+
+    Example::
+
+        results = check_batch([
+            {"response": "Paris is in France.", "sources": ["Paris is the capital of France."]},
+            {"response": "Water boils at 50°C.", "sources": ["Water boils at 100°C."]},
+        ])
+    """
+    verifier = CitationVerifier(threshold=threshold)
+    return verifier.verify_batch(items, max_workers=max_workers)
+
+
 def instrument_langchain(chain, verbose=None):
     """Lazy-loaded LangChain adapter."""
     from longtracer.adapters.langchain_handler import instrument_langchain as _impl
@@ -77,9 +103,11 @@ __all__ = [
     "CitationVerifier",
     "VerificationResult",
     "check",
+    "check_batch",
     "instrument_langchain",
     "instrument_langchain_agent",
     "instrument_langgraph",
     "instrument_llamaindex",
     "instrument_haystack",
 ]
+

@@ -165,10 +165,12 @@ class ParallelPipeline:
                     "text": claim.get("claim", ""),
                     "status": "supported" if claim.get("supported") else "unsupported",
                     "confidence": claim.get("score", 0),
+                    "best_source": claim.get("best_source", ""),
+                    "contradiction_score": claim.get("contradiction_score", 0),
+                    "entailment_score": claim.get("entailment_score", 0),
                     "supporting_chunks": supporting_chunks,
                     "is_hallucination": claim.get("is_hallucination", False),
                     "is_meta_statement": claim.get("is_meta_statement", False),
-                    "entailment_score": claim.get("entailment_score", 0),
                     "nli_ran": claim.get("nli_ran", False),
                 })
 

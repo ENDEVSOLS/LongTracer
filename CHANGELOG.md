@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-04-10
+
+### Added
+- `[tool.longtracer]` config support in `pyproject.toml` — set project-level defaults (project name, backend, threshold, verbose, log_level) without code changes.
+- Config priority chain: Code args > Environment variables > pyproject.toml > Built-in defaults.
+- `verify_batch()` method on `CitationVerifier` — verify multiple response+sources pairs in one call using parallel ThreadPool execution.
+- `verify_batch_async()` — async wrapper for `verify_batch()`.
+- `check_batch()` top-level convenience function — one-liner batch hallucination check.
+- Improved HTML trace report:
+  - Per-claim source diff — side-by-side view of LLM claim vs best source evidence, color-coded by status.
+  - Summary stats bar — visual pass/fail/hallucination breakdown with colored segments.
+  - Inline score bars on each claim row.
+  - Click-to-expand claim detail with STS, entailment, and contradiction scores.
+
+### Changed
+- `LongTracer.init()` now reads defaults from `[tool.longtracer]` in the nearest `pyproject.toml`.
+- `CitationVerifier` reads `threshold` from pyproject.toml config when not explicitly passed.
+- `parallel_pipeline.py` now passes `best_source`, `contradiction_score`, and `score` fields to the `eval_claims` trace span for HTML diff rendering.
+
 ## [0.1.4] - 2026-04-06
 
 ### Added

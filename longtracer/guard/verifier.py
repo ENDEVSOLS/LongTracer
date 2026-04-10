@@ -9,7 +9,7 @@ from typing import List, Dict, Optional, TYPE_CHECKING
 from dataclasses import dataclass, field
 
 from longtracer.guard.claim_splitter import split_into_claims
-from longtracer.guard.nli_model import HybridVerificationModel
+from longtracer.guard.nli_model import HybridVerificationModel, get_shared_model
 
 if TYPE_CHECKING:
     from longtracer.guard.tracer import Tracer
@@ -107,15 +107,25 @@ class CitationVerifier:
     """
     LongTracer - Verify LLM responses against source documents.
     Uses hybrid STS + NLI with gating and latency tracking.
+
+    Models are loaded once and shared across instances for performance.
     """
+
+    _SENTINEL = object()  # distinguish "not passed" from explicit 0.5
 
     def __init__(
         self,
-        threshold: float = 0.5,
+        threshold: float = _SENTINEL,  # type: ignore[assignment]
         tracer: Optional["Tracer"] = None,
         cache: bool = False,
     ):
-        self.model = HybridVerificationModel()
+        # Priority: code arg > pyproject.toml > default (0.5)
+        if threshold is self._SENTINEL:
+            from longtracer.config import load_config
+            cfg = load_config()
+            threshold = cfg.get("threshold", 0.5)
+
+        self.model = get_shared_model()
         self.threshold = threshold
         self.tracer = tracer
         self._cache: Dict[str, Dict] = {} if cache else None
@@ -356,3 +366,92 @@ class CitationVerifier:
             "hallucination_count": result.hallucination_count,
             "latency_stats": result.latency_stats,
         }
+
+    def verify_batch(
+        self,
+        items: List[Dict],
+        max_workers: int = 4,
+    ) -> List[VerificationResult]:
+        """Verify multiple responses in one call.
+
+        Each item must be a dict with:
+            - "response" (str): The LLM response to verify.
+            - "sources" (list[str]): Source texts to verify against.
+            - "source_metadata" (list[dict], optional): Metadata per source.
+
+        Args:
+            items: List of dicts, each with "response" and "sources".
+            max_workers: Max parallel workers (default 4).
+
+        Returns:
+            List of VerificationResult, one per item (same order).
+
+        Example::
+
+            results = verifier.verify_batch([
+                {"response": "Paris is in France.", "sources": ["Paris is the capital of France."]},
+                {"response": "Water boils at 50°C.", "sources": ["Water boils at 100°C."]},
+            ])
+        """
+        if not isinstance(items, list):
+            raise TypeError(
+                f"`items` must be a list of dicts, got {type(items).__name__}"
+            )
+
+        for i, item in enumerate(items):
+            if not isinstance(item, dict):
+                raise TypeError(
+                    f"`items[{i}]` must be a dict with 'response' and 'sources', "
+                    f"got {type(item).__name__}"
+                )
+            if "response" not in item:
+                raise TypeError(
+                    f"`items[{i}]` missing required key 'response'"
+                )
+            if "sources" not in item:
+                raise TypeError(
+                    f"`items[{i}]` missing required key 'sources'"
+                )
+
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        def _verify_one(idx_item):
+            idx, item = idx_item
+            return idx, self.verify_parallel(
+                item["response"],
+                item["sources"],
+                item.get("source_metadata"),
+            )
+
+        if len(items) == 1:
+            # Skip ThreadPool overhead for single item
+            _, result = _verify_one((0, items[0]))
+            return [result]
+
+        results: List[Optional[VerificationResult]] = [None] * len(items)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [
+                executor.submit(_verify_one, (i, item))
+                for i, item in enumerate(items)
+            ]
+            for future in as_completed(futures):
+                idx, result = future.result()
+                results[idx] = result
+
+        return results  # type: ignore[return-value]
+
+    async def verify_batch_async(
+        self,
+        items: List[Dict],
+        max_workers: int = 4,
+    ) -> List[VerificationResult]:
+        """Async wrapper for verify_batch.
+
+        Runs the CPU-bound batch verification in a thread pool executor
+        so it doesn't block the event loop.
+        """
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None, self.verify_batch, items, max_workers
+        )
+

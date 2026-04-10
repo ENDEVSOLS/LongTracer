@@ -499,3 +499,31 @@ class HybridVerificationModel:
 
 # Backward compatibility
 NLIModel = HybridVerificationModel
+
+# ── Shared model singleton ──────────────────────────────────────────
+# Avoids reloading STS + NLI + SLM on every CitationVerifier() call.
+# First access loads models (~10s), subsequent access returns instantly.
+
+_shared_model: Optional[HybridVerificationModel] = None
+
+
+def get_shared_model(**kwargs) -> HybridVerificationModel:
+    """Get or create the shared HybridVerificationModel singleton.
+
+    Models are loaded once and reused across all CitationVerifier instances.
+    Pass any kwargs to override model defaults on first creation.
+
+    Returns:
+        The shared HybridVerificationModel instance.
+    """
+    global _shared_model
+    if _shared_model is None:
+        _shared_model = HybridVerificationModel(**kwargs)
+    return _shared_model
+
+
+def reset_shared_model() -> None:
+    """Clear the shared model (useful for testing)."""
+    global _shared_model
+    _shared_model = None
+

@@ -70,3 +70,5 @@ Pdf-docs/*.pdf
 .env
 site/
 site/
+ROADMAP.md
+tests/

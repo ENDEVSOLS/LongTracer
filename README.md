@@ -30,11 +30,12 @@ Detect hallucinations in LLM-generated responses. LongTracer verifies every clai
 pip install longtracer
 ```
 
-### One-Liner (fastest)
+### One-Liner & Batch API
 
 ```python
-from longtracer import check
+from longtracer import check, check_batch
 
+# Verify a single response
 result = check(
     "The Eiffel Tower is 330 meters tall and located in Berlin.",
     ["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."]
@@ -43,7 +44,12 @@ result = check(
 print(result.verdict)             # "FAIL"
 print(result.trust_score)         # 0.0 - 1.0
 print(result.hallucination_count) # 1 ("Berlin" contradicts "Paris")
-print(result.summary)             # "0/1 claims supported, 1 hallucination(s) detected."
+
+# Verify in bulk
+results = check_batch([
+    {"response": "P is NP.", "sources": ["It is not known if P is NP."]},
+    {"response": "Water boils at 100C.", "sources": ["Water boils at 100C."]}
+])
 ```
 
 ### CLI (no Python needed)
@@ -229,7 +235,7 @@ from longtracer.guard.trace_report import export_trace_html
 export_trace_html(tracer, filepath="report.html")
 ```
 
-Generates a self-contained HTML file with trust score, per-claim results, timing breakdown — viewable in any browser, no external dependencies.
+Generates a standalone HTML file with trust scores, a summary stats bar, and clickable per-claim evidence diffs — viewable in any browser, zero external dependencies.
 
 ### JSON Export
 
@@ -252,18 +258,32 @@ export_trace_json(tracer, filepath="trace.json")
 | `chroma` | `pip install "longtracer[chroma]"` | ChromaDB + HuggingFace embeddings |
 | `all` | `pip install "longtracer[all]"` | Everything |
 
-## Environment Variables
+## Configuration
+
+Set project-level defaults effortlessly via `pyproject.toml` or environment variables (env vars override file).
+
+### `pyproject.toml`
+```toml
+[tool.longtracer]
+project = "my-rag-app"
+backend = "sqlite"
+threshold = 0.5
+verbose = true
+log_level = "INFO"
+```
+
+### Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `LONGTRACER_ENABLED` | `false` | Auto-enable with `LongTracer.auto()` |
 | `LONGTRACER_VERBOSE` | `false` | Print per-span summaries |
 | `LONGTRACER_LOG_LEVEL` | `INFO` | Python logging level |
+| `LONGTRACER_PROJECT` | `longtracer`| Default project name |
 | `TRACE_CACHE_BACKEND` | `sqlite` | Trace storage: sqlite, memory, mongo, postgres, redis |
 | `MONGODB_URI` | — | MongoDB connection URI |
 | `POSTGRES_HOST` | — | PostgreSQL host |
 | `REDIS_HOST` | — | Redis host |
-| `TRACE_PROJECT` | `longtracer` | Default project name |
 
 ## Demo Application
 

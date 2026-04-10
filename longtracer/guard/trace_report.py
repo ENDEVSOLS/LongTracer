@@ -302,6 +302,40 @@ th { background: var(--surface-2); color: var(--text-muted); font-weight: 600; f
 .status-unsupported { color: var(--red); font-weight: 600; }
 .status-hallucination { color: var(--red); font-weight: 700; }
 
+/* Score bar */
+.score-bar { display: inline-block; width: 50px; height: 6px; background: var(--surface-2);
+             border-radius: 3px; vertical-align: middle; margin-left: 6px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 3px; }
+
+/* Stats bar */
+.stats-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 0.5rem; }
+.stats-bar .seg { transition: width 0.3s; }
+.stats-bar .seg-pass { background: var(--green); }
+.stats-bar .seg-fail { background: var(--yellow); }
+.stats-bar .seg-hall { background: var(--red); }
+.stats-labels { display: flex; gap: 1rem; margin-top: 0.35rem; font-size: 0.72rem; color: var(--text-muted); }
+.stats-labels .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; }
+
+/* Claim diff */
+.claim-diff { display: none; border-top: 1px solid var(--border); }
+.claim-diff.open { display: block; }
+.diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.diff-col { padding: 0.75rem 1rem; }
+.diff-col:first-child { border-right: 1px solid var(--border); }
+.diff-col h5 { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;
+               letter-spacing: 0.05em; margin-bottom: 0.4rem; font-weight: 600; }
+.diff-text { font-size: 0.8rem; line-height: 1.5; color: var(--text); word-break: break-word; }
+.diff-claim { background: rgba(99,102,241,0.06); border-radius: 4px; padding: 0.5rem; }
+.diff-source { border-radius: 4px; padding: 0.5rem; }
+.diff-source.supported { background: var(--green-bg); }
+.diff-source.contradicted { background: var(--red-bg); }
+.diff-source.neutral { background: var(--surface-2); }
+.diff-scores { padding: 0.5rem 1rem; border-top: 1px solid var(--border);
+               display: flex; gap: 1.5rem; font-size: 0.72rem; color: var(--text-muted); }
+.diff-scores span b { color: var(--text); font-weight: 500; }
+.claim-row { cursor: pointer; transition: background 0.15s; }
+.claim-row:hover { background: var(--surface-2); }
+
 /* I/O section */
 .io-section { margin-bottom: 1rem; }
 .io-section h4 { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;
@@ -366,6 +400,11 @@ function typeBadge(t) {
   const cls = 'type-' + (t || 'chain');
   return '<span class="type-badge ' + cls + '">' + esc(t || 'chain') + '</span>';
 }
+function scoreColor(score) {
+  if (score >= 0.7) return 'var(--green)';
+  if (score >= 0.4) return 'var(--yellow)';
+  return 'var(--red)';
+}
 
 // Header pills
 (function() {
@@ -385,19 +424,36 @@ function typeBadge(t) {
   // Find grounding span
   const grounding = R.find(r => r.name === 'grounding');
   const evalClaims = R.find(r => r.name === 'eval_claims');
-  const gOut = grounding ? (grounding.outputs || {}) : {};
-  const claims = evalClaims ? (evalClaims.outputs || {}).claims || [] : [];
-  const trustScore = gOut.grounding_score || 0;
-  const verdict = gOut.verdict || 'N/A';
-  const hCount = gOut.hallucination_count || 0;
-  const supported = claims.filter(c => c.status === 'supported').length;
+  const gOut = grounding ? (grounding.outputs || {}) : (T.outputs || {});
+  const claims = evalClaims ? ((evalClaims.outputs || {}).claims || []) : ((T.outputs || {}).claims || []);
+  const trustScore = typeof gOut.grounding_score !== 'undefined' ? gOut.grounding_score : (T.outputs.trust_score || 0);
+  const verdict = gOut.verdict || T.outputs.verdict || 'N/A';
+  const hCount = gOut.hallucination_count !== undefined ? gOut.hallucination_count : (T.outputs.hallucination_count || 0);
+  const supported = claims.filter(c => c.status === 'supported' || c.supported === true).length;
+  const unsupported = claims.length - supported - hCount;
   const verdictClass = verdict === 'PASS' ? 'badge-pass' : verdict === 'FAIL' ? 'badge-fail' : 'badge-na';
+
+  // Stats bar percentages
+  const total = claims.length || 1;
+  const passPct = (supported / total * 100).toFixed(1);
+  const hallPct = (hCount / total * 100).toFixed(1);
+  const failPct = (100 - parseFloat(passPct) - parseFloat(hallPct)).toFixed(1);
 
   el.innerHTML = [
     '<div class="s-card"><div class="label">Verdict</div><div class="val"><span class="badge ' + verdictClass + '">' + esc(verdict) + '</span></div></div>',
     '<div class="s-card"><div class="label">Trust Score</div><div class="val">' + (trustScore * 100).toFixed(0) + '%</div></div>',
     '<div class="s-card"><div class="label">Total Duration</div><div class="val">' + fmtDur(T.duration_ms) + '</div></div>',
-    '<div class="s-card"><div class="label">Claims</div><div class="val">' + claims.length + '</div><div class="sub">' + supported + ' supported, ' + hCount + ' hallucinations</div></div>',
+    '<div class="s-card"><div class="label">Claims</div><div class="val">' + claims.length + '</div>' +
+      '<div class="stats-bar">' +
+        '<div class="seg seg-pass" style="width:' + passPct + '%"></div>' +
+        '<div class="seg seg-fail" style="width:' + failPct + '%"></div>' +
+        '<div class="seg seg-hall" style="width:' + hallPct + '%"></div>' +
+      '</div>' +
+      '<div class="stats-labels">' +
+        '<span><span class="dot" style="background:var(--green)"></span>' + supported + ' supported</span>' +
+        (unsupported > 0 ? '<span><span class="dot" style="background:var(--yellow)"></span>' + unsupported + ' unsupported</span>' : '') +
+        (hCount > 0 ? '<span><span class="dot" style="background:var(--red)"></span>' + hCount + ' hallucinations</span>' : '') +
+      '</div></div>',
     '<div class="s-card"><div class="label">Spans</div><div class="val">' + R.length + '</div></div>',
   ].join('');
 })();
@@ -463,6 +519,7 @@ function typeBadge(t) {
     Object.keys(outputs).forEach(k => { if (k !== 'duration_ms' && k !== 'tags') cleanOutputs[k] = outputs[k]; });
     const inputs = r.inputs || {};
 
+
     html += '<div class="span-card">' +
       '<div class="span-hdr" onclick="toggleSpan(this)">' +
         '<div class="span-hdr-left">' +
@@ -492,35 +549,76 @@ function typeBadge(t) {
   el.innerHTML = html;
 })();
 
-// Claims table
+// Claims table with per-claim source diff
 (function() {
-  const evalClaims = R.find(r => r.name === 'eval_claims');
-  if (!evalClaims) return;
-  const claims = (evalClaims.outputs || {}).claims || [];
-  if (!claims.length) return;
-
   const card = document.getElementById('claimsCard');
   const el = document.getElementById('claims');
+  const evalClaims = R.find(r => r.name === 'eval_claims');
+  const claims = evalClaims ? ((evalClaims.outputs || {}).claims || []) : ((T.outputs || {}).claims || []);
+  if (!claims || claims.length === 0) return;
   card.style.display = '';
 
-  let html = '<table><thead><tr><th>#</th><th>Claim</th><th>Status</th><th>Score</th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>#</th><th>Claim</th><th>Status</th><th>Score</th><th></th></tr></thead><tbody>';
   claims.forEach((c, i) => {
-    const status = c.is_hallucination ? 'HALLUCINATION' : (c.status || 'unknown');
-    const cls = c.is_hallucination ? 'status-hallucination' : (status === 'supported' ? 'status-supported' : 'status-unsupported');
-    const icon = status === 'supported' ? '✓' : '✕';
-    html += '<tr><td>' + (i+1) + '</td><td>' + esc(c.text || '') + '</td>' +
-            '<td class="' + cls + '">' + icon + ' ' + esc(status) + '</td>' +
-            '<td>' + (c.score != null ? Number(c.score).toFixed(2) : 'N/A') + '</td></tr>';
+    const cClaim = c.claim || c.text || c.statement || 'Unknown claim';
+    let cStatus = c.status || (c.is_hallucination ? 'hallucination' : (c.supported ? 'supported' : 'unsupported'));
+    const status = cStatus.toUpperCase();
+    const isHallucination = c.is_hallucination || cStatus === 'hallucination';
+    const cls = isHallucination ? 'status-hallucination' : (cStatus === 'supported' ? 'status-supported' : 'status-unsupported');
+    const icon = cStatus === 'supported' ? '✓' : '✕';
+    const score = c.score != null ? Number(c.score) : (c.confidence != null ? Number(c.confidence) : 0);
+    const barColor = scoreColor(score);
+    const hasDiff = c.best_source && c.best_source.length > 0;
+    const expandIcon = hasDiff ? '▸' : '';
+
+    html += '<tr class="claim-row" onclick="toggleDiff(' + i + ')">' +
+      '<td>' + (i+1) + '</td>' +
+      '<td>' + esc(cClaim) + '</td>' +
+      '<td class="' + cls + '">' + icon + ' ' + esc(status) + '</td>' +
+      '<td>' + score.toFixed(2) +
+        '<span class="score-bar"><span class="score-bar-fill" style="width:' + (score * 100).toFixed(0) + '%;background:' + barColor + '"></span></span>' +
+      '</td>' +
+      '<td style="color:var(--text-muted);font-size:0.7rem;">' + expandIcon + '</td>' +
+    '</tr>';
+
+    // Diff row
+    if (hasDiff) {
+      const diffClass = isHallucination ? 'contradicted' : (cStatus === 'supported' ? 'supported' : 'neutral');
+      html += '<tr><td colspan="5" style="padding:0;border:none;">' +
+        '<div class="claim-diff" id="diff' + i + '">' +
+          '<div class="diff-grid">' +
+            '<div class="diff-col">' +
+              '<h5>LLM Claim</h5>' +
+              '<div class="diff-text diff-claim">' + esc(cClaim) + '</div>' +
+            '</div>' +
+            '<div class="diff-col">' +
+              '<h5>Best Source Evidence</h5>' +
+              '<div class="diff-text diff-source ' + diffClass + '">' + esc(c.best_source || 'No source') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="diff-scores">' +
+            '<span>STS Score: <b>' + score.toFixed(3) + '</b></span>' +
+            (c.entailment_score != null ? '<span>Entailment: <b>' + Number(c.entailment_score).toFixed(3) + '</b></span>' : '') +
+            (c.contradiction_score != null ? '<span>Contradiction: <b>' + Number(c.contradiction_score).toFixed(3) + '</b></span>' : '') +
+          '</div>' +
+        '</div>' +
+      '</td></tr>';
+    }
   });
   html += '</tbody></table>';
   el.innerHTML = html;
 })();
 
-// Toggle
+// Toggle functions
 function toggleSpan(hdr) {
   hdr.classList.toggle('open');
   const body = hdr.nextElementSibling;
   body.classList.toggle('open');
+}
+
+function toggleDiff(i) {
+  const diff = document.getElementById('diff' + i);
+  if (diff) diff.classList.toggle('open');
 }
 
 // Gen time
@@ -528,3 +626,4 @@ document.getElementById('genTime').textContent = new Date().toISOString().replac
 </script>
 </body>
 </html>"""
+

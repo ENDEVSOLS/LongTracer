@@ -5,8 +5,9 @@
 No setup, no class instantiation:
 
 ```python
-from longtracer import check
+from longtracer import check, check_batch
 
+# Single check
 result = check(
     "The Eiffel Tower is 330 meters tall and located in Berlin.",
     ["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."]
@@ -14,6 +15,12 @@ result = check(
 
 print(result.verdict)   # "FAIL"
 print(result.summary)   # "1/1 claims supported, 1 hallucination(s) detected."
+
+# Batch check
+results = check_batch([
+    {"response": "Water boils at 100C.", "sources": ["At 1 atm, water boiling point is 100C."]},
+    {"response": "Paris is in Germany.", "sources": ["Paris is in France."]}
+])
 ```
 
 Or from the command line:
