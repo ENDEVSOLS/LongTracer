@@ -43,6 +43,8 @@ Issues in scope:
 - Path traversal or unsafe file writes in trace export functions
 - Credential or secret leakage through logs or trace output
 - Dependency vulnerabilities with direct exploitability
+- **REST API server** (`longtracer serve`): authentication bypass, rate limit evasion, injection via request payloads
+- **Webhook system**: HMAC signature bypass, secret leakage, SSRF via webhook URL configuration
 
 Out of scope:
 
@@ -56,6 +58,15 @@ Out of scope:
 - **Trace storage**: Restrict access to `~/.longtracer/traces.db` and any configured database backends
 - **HTML reports**: `export_trace_html()` output contains raw LLM response text — treat it as untrusted content before serving in a browser
 - **Dependencies**: Pin dependency versions in production and audit with `pip audit` or `safety`
+- **REST API server** (`longtracer serve`):
+  - Always set `LONGTRACER_API_KEY` in production — without it, the server runs in open/dev mode
+  - Use HTTPS (terminate TLS at a reverse proxy) — the server itself does not handle TLS
+  - Configure `LONGTRACER_CORS_ORIGINS` to restrict cross-origin access
+  - Monitor rate limit logs for abuse patterns
+- **Webhooks**:
+  - Always set `LONGTRACER_WEBHOOK_SECRET` — without it, payloads are unsigned
+  - Verify `X-LongTracer-Signature` on your receiver endpoint using HMAC-SHA256
+  - Use HTTPS webhook URLs — HTTP is allowed in dev but discouraged in production
 
 ## Dependency Security
 

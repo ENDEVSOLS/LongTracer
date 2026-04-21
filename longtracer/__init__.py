@@ -94,6 +94,24 @@ def instrument_langchain_agent(agent_executor, threshold=0.5, verbose=None):
     return _impl(agent_executor, threshold=threshold, verbose=verbose)
 
 
+def instrument_openai_assistant(client, threshold=0.5, verbose=None):
+    """Lazy-loaded OpenAI Assistants API adapter."""
+    from longtracer.adapters.openai_handler import instrument_openai_assistant as _impl
+    return _impl(client, threshold=threshold, verbose=verbose)
+
+
+def instrument_crewai(crew, threshold=0.5, verbose=None):
+    """Lazy-loaded CrewAI adapter."""
+    from longtracer.adapters.crewai_handler import instrument_crewai as _impl
+    return _impl(crew, threshold=threshold, verbose=verbose)
+
+
+def instrument_autogen(agent, threshold=0.5, verbose=None):
+    """Lazy-loaded AutoGen adapter."""
+    from longtracer.adapters.autogen_handler import instrument_autogen as _impl
+    return _impl(agent, threshold=threshold, verbose=verbose)
+
+
 # Backward compatibility
 CitationGuard = LongTracer
 
@@ -109,5 +127,8 @@ __all__ = [
     "instrument_langgraph",
     "instrument_llamaindex",
     "instrument_haystack",
+    "instrument_openai_assistant",
+    "instrument_crewai",
+    "instrument_autogen",
 ]
 

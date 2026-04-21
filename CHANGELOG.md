@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-04-21
+
+### Added
+- **OpenAI Assistants API adapter**: `instrument_openai_assistant(client)` — monkey-patches `create_and_poll` to automatically verify assistant responses against `file_search` citations.
+- **CrewAI adapter**: `instrument_crewai(crew)` — wraps `kickoff()` to verify each task's output against its context sources. Also provides `verify_crew_output()` for standalone use.
+- **AutoGen adapter**: `instrument_autogen(agent)` — wraps AutoGen ≥0.4 `AssistantAgent.on_messages` for automatic response verification. Also provides `verify_autogen_result()` for standalone use.
+- **REST API server** (`longtracer serve`): FastAPI-based HTTP server exposing verification as REST endpoints.
+  - `POST /api/v1/verify` — verify a single response.
+  - `POST /api/v1/verify/batch` — verify multiple responses in one call.
+  - `GET /api/v1/health` — health check (no auth required).
+  - `GET /api/v1/traces` — list recent traces.
+  - `GET /api/v1/traces/{trace_id}` — get a specific trace.
+  - API key authentication via `x-api-key` header (LangSmith-standard) with `Authorization: Bearer` fallback.
+  - Timing-safe key comparison via `secrets.compare_digest`.
+  - CORS middleware with configurable origins (`LONGTRACER_CORS_ORIGINS`).
+  - Token bucket rate limiter (60 req/min per IP, configurable via `LONGTRACER_RATE_LIMIT`).
+  - Pydantic input validation with max-length and max-items constraints.
+- **Webhook support**: HMAC-SHA256 signed HTTP POST dispatch with 5 retries + exponential backoff + jitter (Stripe-style).
+  - Configurable via env vars (`LONGTRACER_WEBHOOK_URL`, `LONGTRACER_WEBHOOK_SECRET`) or `[tool.longtracer]` in pyproject.toml.
+  - Async dispatch in background thread — never blocks the verification pipeline.
+  - Dead-letter logging after max retries.
+  - `dispatch_webhook()` and `dispatch_verification_result()` public APIs.
+- Webhook config keys added to `[tool.longtracer]`: `webhook_url`, `webhook_secret`, `webhook_events`, `webhook_timeout`.
+- Optional dependency groups: `openai`, `crewai`, `autogen`, `server`.
+
+### Changed
+- Version bumped to `0.1.6`.
+- `[project.optional-dependencies]` `all` extra now includes `openai`, `crewai`, `autogen`, `server`.
+- `longtracer.adapters.__init__` now lazily exports all 7 adapter modules.
+
 ## [0.1.5] - 2026-04-10
 
 ### Added

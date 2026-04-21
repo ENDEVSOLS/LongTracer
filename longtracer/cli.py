@@ -228,6 +228,25 @@ def cmd_check(args):
     print()
 
 
+def cmd_serve(args):
+    """Start the REST API server."""
+    try:
+        from longtracer.server import run_server
+    except ImportError:
+        print(
+            "Server dependencies not installed.\n"
+            "Install with: pip install 'longtracer[server]'"
+        )
+        return
+    print(f"Starting LongTracer API server on {args.host}:{args.port}")
+    run_server(
+        host=args.host,
+        port=args.port,
+        workers=args.workers,
+        reload=args.reload,
+    )
+
+
 def main():
     _load_dotenv()
     parser = argparse.ArgumentParser(
@@ -253,6 +272,13 @@ def main():
     cp.add_argument("--threshold", type=float, default=0.5,
                      help="Verification threshold (default: 0.5)")
 
+    # serve subcommand
+    sp = sub.add_parser("serve", help="Start the REST API server")
+    sp.add_argument("--host", default="0.0.0.0", help="Bind address (default: 0.0.0.0)")
+    sp.add_argument("--port", type=int, default=8100, help="Port (default: 8100)")
+    sp.add_argument("--workers", type=int, default=1, help="Worker processes (default: 1)")
+    sp.add_argument("--reload", action="store_true", help="Enable auto-reload (dev mode)")
+
     args = parser.parse_args()
     if args.command is None:
         args.command = "view"
@@ -262,6 +288,8 @@ def main():
 
     if args.command == "check":
         cmd_check(args)
+    elif args.command == "serve":
+        cmd_serve(args)
     elif args.command == "view":
         if args.id:
             cmd_view(args)

@@ -90,7 +90,7 @@ def normalize_doc(doc) -> Dict[str, Any]:
     }
 
 
-class CitationGuardCallbackHandler(BaseCallbackHandler):
+class LongTracerCallbackHandler(BaseCallbackHandler):
     """
     LangChain callback handler for LongTracer tracing.
 
@@ -352,7 +352,7 @@ def instrument_langchain(chain, verbose: Optional[bool] = None):
     if not LongTracer.is_enabled():
         LongTracer.init(verbose=verbose)
 
-    handler = CitationGuardCallbackHandler()
+    handler = LongTracerCallbackHandler()
 
     if hasattr(chain, "callbacks"):
         if chain.callbacks is None:

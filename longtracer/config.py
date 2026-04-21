@@ -22,6 +22,10 @@ _VALID_KEYS = {
     "threshold": float,
     "verbose": bool,
     "log_level": str,
+    "webhook_url": str,
+    "webhook_secret": str,
+    "webhook_events": list,
+    "webhook_timeout": float,
 }
 
 # Module-level cache so we only read once per process
