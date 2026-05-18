@@ -115,3 +115,28 @@ class MemoryBackend(TraceCacheBackend):
             "runs": len(self._runs),
             "max_traces": self._max_traces
         }
+
+    # ── Optimized metrics overrides ─────────────────────────────
+
+    def get_metrics_summary(
+        self,
+        project=None,
+        start_time=None,
+        end_time=None,
+    ):
+        """Optimized metrics summary via direct dict iteration."""
+        traces = list(self._traces.values())
+        return self._aggregate_summary(traces, project, start_time, end_time)
+
+    def get_metrics_timeseries(
+        self,
+        project=None,
+        start_time=None,
+        end_time=None,
+        interval: str = "1d",
+    ):
+        """Optimized metrics timeseries via direct dict iteration."""
+        traces = list(self._traces.values())
+        return self._aggregate_timeseries(
+            traces, project, start_time, end_time, interval,
+        )

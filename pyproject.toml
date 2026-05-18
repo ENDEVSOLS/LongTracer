@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "longtracer"
-version = "0.1.6"
+version = "0.2.0"
 description = "RAG verification guardrails — detect hallucinations in LLM responses using hybrid STS + NLI."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -89,9 +89,16 @@ autogen = [
 server = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.6",
+]
+otel = [
+    "opentelemetry-api>=1.20",
+    "opentelemetry-sdk>=1.20",
+    "opentelemetry-exporter-otlp-proto-http>=1.20",
 ]
 all = [
-    "longtracer[langchain,llamaindex,haystack,langgraph,mongo,chroma,postgres,redis,slm,openai,crewai,autogen,server]",
+    "longtracer[langchain,llamaindex,haystack,langgraph,mongo,chroma,postgres,redis,slm,openai,crewai,autogen,server,otel]",
 ]
 docs = [
     "mkdocs-material>=9.0",
@@ -130,3 +137,8 @@ ignore_missing_imports = true
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-v --tb=short"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]

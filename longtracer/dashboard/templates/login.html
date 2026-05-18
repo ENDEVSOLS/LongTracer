@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Login — LongTracer Dashboard{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <span class="logo-icon large">◆</span>
+      <h1>LongTracer</h1>
+      <p class="login-subtitle">Enter your API key to access the dashboard</p>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/dashboard/login" class="login-form">
+      <div class="form-group">
+        <label for="api_key">API Key</label>
+        <input
+          type="password"
+          id="api_key"
+          name="api_key"
+          placeholder="Enter your API key"
+          required
+          autofocus
+          class="input-field"
+        >
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+    </form>
+
+    <div class="login-footer">
+      <p>The API key is the same as <code>x-api-key</code> header value.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
