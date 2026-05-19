@@ -73,6 +73,10 @@ nav:
     - Direct API: integrations/direct-api.md
   - Trace Storage:
     - Backends: backends.md
+  - Observability & Analytics:
+    - Built-in Dashboard: observability-analytics/dashboard.md
+    - OpenTelemetry: observability-analytics/opentelemetry.md
+    - Alerting: observability-analytics/alerts.md
   - CLI Reference: cli.md
   - API Reference: api-reference.md
   - Changelog: changelog.md

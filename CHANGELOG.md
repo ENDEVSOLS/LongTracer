@@ -5,8 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.6] - 2026-04-21
+## [0.2.0] - 2026-05-18
 
+### Added
+- **Observability & Analytics Suite**: Major upgrade introducing built-in monitoring, metrics aggregation, and dashboards.
+- **Grafana Dashboard Template**: Added `grafana/longtracer.json` provisioning template for visualizing trust scores, hallucination rates, and latency.
+- **OpenTelemetry Integration (`longtracer[otel]`)**:
+  - Emits OTLP spans for RAG verification containing custom attributes (`longtracer.trust_score`, `longtracer.hallucination_count`, etc.).
+  - Fails gracefully; operates as a zero-overhead no-op if OTel packages are missing.
+- **Active Alerting System**:
+  - Background daemon thread dispatchers for zero-latency impact on main verification API.
+  - Supports Slack, Discord, Webhooks, and Email channels.
+  - Threshold-based trigger (alerts when trust score drops below `LONGTRACER_ALERT_THRESHOLD`).
+- **Dashboard UI**:
+  - Built-in web dashboard available at `/dashboard`.
+  - Authenticated via HTTP-only cookies and timing-safe digest comparisons.
+- **Aggregated Metrics Backend**:
+  - Added SQLite/Memory backend aggregation functions for tracking `total_traces`, `avg_trust_score`, and `total_hallucinations`.
+  - New endpoints: `/api/v1/metrics/summary` and `/api/v1/metrics/timeseries`.
+
+## [0.1.6] - 2026-04-21
 ### Added
 - **OpenAI Assistants API adapter**: `instrument_openai_assistant(client)` — monkey-patches `create_and_poll` to automatically verify assistant responses against `file_search` citations.
 - **CrewAI adapter**: `instrument_crewai(crew)` — wraps `kickoff()` to verify each task's output against its context sources. Also provides `verify_crew_output()` for standalone use.

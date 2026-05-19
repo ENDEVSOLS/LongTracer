@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}LongTracer Dashboard{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7"></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">◆</span>
+        <span class="logo-text">LongTracer</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item {% if page == 'metrics' %}active{% endif %}">
+          <span class="nav-icon">📊</span> Overview
+        </a>
+        <a href="/dashboard/traces" class="nav-item {% if page == 'traces' %}active{% endif %}">
+          <span class="nav-icon">🔍</span> Traces
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="version">v0.4.0</span>
+        <a href="/docs" class="nav-link">API Docs</a>
+        {% if api_key_configured %}
+        <form method="POST" action="/dashboard/logout">
+          <button type="submit" class="btn-logout">Logout</button>
+        </form>
+        {% endif %}
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      {% if error_message %}
+      <div class="alert alert-error">{{ error_message }}</div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -26,6 +26,18 @@ _VALID_KEYS = {
     "webhook_secret": str,
     "webhook_events": list,
     "webhook_timeout": float,
+    # Alert config
+    "alert_threshold": float,
+    "alert_channels": list,
+    "slack_webhook_url": str,
+    "discord_webhook_url": str,
+    "alert_email_from": str,
+    "alert_email_to": list,
+    "smtp_host": str,
+    "smtp_port": str,
+    "smtp_user": str,
+    "smtp_password": str,
+    "otel_enabled": bool,
 }
 
 # Module-level cache so we only read once per process

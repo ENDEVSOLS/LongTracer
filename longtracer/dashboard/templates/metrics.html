@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Metrics — LongTracer Dashboard{% endblock %}
+{% set page = "metrics" %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Overview</h1>
+  <div class="header-actions">
+    <select id="project-filter" class="input-field" onchange="loadMetrics()">
+      <option value="">All Projects</option>
+      {% for p in projects %}
+      <option value="{{ p }}" {% if selected_project == p %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- Summary stat cards -->
+<div class="stat-cards">
+  <div class="stat-card">
+    <div class="stat-label">Total Verifications</div>
+    <div class="stat-value" id="stat-total">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Avg Trust Score</div>
+    <div class="stat-value" id="stat-avg-score">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Pass Rate</div>
+    <div class="stat-value" id="stat-pass-rate">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Hallucinations</div>
+    <div class="stat-value" id="stat-hallucinations">—</div>
+    <div class="stat-sub" id="stat-hall-rate"></div>
+  </div>
+</div>
+
+<!-- Verdict card -->
+<div class="chart-card">
+  <div class="card-title-row">
+    <h2 class="card-title">Verdict Summary</h2>
+  </div>
+  <div class="verdict-row">
+    <div class="verdict-item verdict-pass">
+      <span class="verdict-count" id="verdict-pass">0</span>
+      <span class="verdict-label">PASS</span>
+    </div>
+    <div class="verdict-item verdict-fail">
+      <span class="verdict-count" id="verdict-fail">0</span>
+      <span class="verdict-label">FAIL</span>
+    </div>
+    <div class="verdict-bar-container">
+      <div class="verdict-bar">
+        <div class="verdict-bar-pass" id="verdict-bar-pass" style="width: 0%"></div>
+      </div>
+      <div class="verdict-bar-label">
+        <span id="verdict-pct">0%</span> pass rate
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts row -->
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="card-title-row">
+      <h2 class="card-title">Trust Score Trend</h2>
+      <span class="card-subtitle">Last 7 days</span>
+    </div>
+    <div class="chart-container">
+      <canvas id="trust-score-chart"></canvas>
+      <div id="trust-score-empty" class="chart-empty hidden">
+        <span class="empty-icon-sm">📭</span> No data yet
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="card-title-row">
+      <h2 class="card-title">Hallucination Count</h2>
+      <span class="card-subtitle">Daily</span>
+    </div>
+    <div class="chart-container">
+      <canvas id="hallucination-chart"></canvas>
+      <div id="hallucination-empty" class="chart-empty hidden">
+        <span class="empty-icon-sm">📭</span> No data yet
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Load metrics on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadMetrics();
+  });
+</script>
+{% endblock %}

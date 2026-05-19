@@ -107,8 +107,21 @@ class Tracer:
         self._run_stack.append(self.root_run)
         self._safe_save_run(self.root_run.copy())
 
-    def end_root(self, outputs: Optional[Dict[str, Any]] = None):
-        """End the root trace run and save to backend."""
+    def end_root(
+        self,
+        outputs: Optional[Dict[str, Any]] = None,
+        metrics: Optional[Dict[str, Any]] = None,
+    ):
+        """End the root trace run and save to backend.
+
+        Args:
+            outputs: Optional output data for the trace.
+            metrics: Optional verification metrics dict with keys:
+                trust_score (float), hallucination_count (int),
+                claim_count (int). When provided, these are stored as
+                top-level fields in the trace document for metrics
+                aggregation.
+        """
         if not self.root_run:
             return
 
@@ -143,6 +156,13 @@ class Tracer:
             "duration_ms": duration_ms,
             "run_count": len(self._run_stack),
         }
+
+        # Lift verification metrics to top-level trace fields
+        if metrics:
+            trace_doc["trust_score"] = metrics.get("trust_score")
+            trace_doc["hallucination_count"] = metrics.get("hallucination_count")
+            trace_doc["claim_count"] = metrics.get("claim_count")
+
         self._safe_save_trace(trace_doc)
 
         if self._run_stack:

@@ -29,6 +29,7 @@ import os
 import secrets
 import time
 from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
@@ -178,6 +179,31 @@ class TokenBucketRateLimiter:
             return False
 
 
+# ── Time parsing helper ───────────────────────────────────────
+
+def _parse_metrics_time(
+    value: Optional[str],
+    default_offset_days: Optional[int] = None,
+) -> Optional[datetime]:
+    """Parse an ISO 8601 datetime string or return a default.
+
+    Args:
+        value: ISO 8601 datetime string, or None.
+        default_offset_days: If value is None, return now minus this many days.
+
+    Returns:
+        A datetime object, or None.
+    """
+    if value:
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            pass
+    if default_offset_days is not None:
+        return datetime.now(timezone.utc) - timedelta(days=default_offset_days)
+    return None
+
+
 # ── App Factory ────────────────────────────────────────────────
 
 def create_app() -> Any:
@@ -192,12 +218,22 @@ def create_app() -> Any:
     try:
         from fastapi import FastAPI, Header, HTTPException, Request, Depends
         from fastapi.middleware.cors import CORSMiddleware
-        from fastapi.responses import JSONResponse
+        from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
     except ImportError:
         raise ImportError(
             "FastAPI and uvicorn are required for the REST API server. "
             "Install with: pip install 'longtracer[server]'"
         )
+
+    try:
+        from fastapi.templating import Jinja2Templates
+        from fastapi.staticfiles import StaticFiles
+        import pathlib
+        _DASHBOARD_DIR = pathlib.Path(__file__).parent / "dashboard"
+        templates = Jinja2Templates(directory=str(_DASHBOARD_DIR / "templates"))
+        _TEMPLATES_AVAILABLE = True
+    except Exception:
+        _TEMPLATES_AVAILABLE = False
 
     # ── Configuration ───────────────────────────────────────
     api_key = os.environ.get("LONGTRACER_API_KEY", "")
@@ -317,6 +353,23 @@ def create_app() -> Any:
                 dispatch_verification_result(result)
             except Exception:
                 pass  # Webhook failure should never fail the API
+
+            # Save verification as a trace (for metrics / observability)
+            try:
+                _save_verification_trace(req.response, req.sources, result)
+            except Exception:
+                pass  # Trace save failure should never fail the API
+
+            # Dispatch alert if trust_score < threshold
+            try:
+                from longtracer.alerts import dispatch_alert
+                dispatch_alert(
+                    result,
+                    project="longtracer_api",
+                    trace_id=getattr(result, '_trace_id', None),
+                )
+            except Exception:
+                pass  # Alert failure should never fail the API
 
             return VerifyResponse(
                 verdict=result.verdict,
@@ -438,6 +491,359 @@ def create_app() -> Any:
         except Exception as exc:
             logger.error("Get trace error: %s", exc)
             raise HTTPException(status_code=500, detail="Failed to get trace.")
+
+    # ── Helper: save verification trace ────────────────────────
+
+    def _save_verification_trace(
+        response_text: str,
+        sources: List[str],
+        result: Any,
+    ) -> None:
+        """Save a verification result as a trace with metrics."""
+        try:
+            from longtracer.guard.tracer import Tracer
+            from longtracer.guard.cache import get_default_backend
+
+            tracer = Tracer(
+                project_name="longtracer_api",
+                run_name="verify_endpoint",
+                backend=get_default_backend(),
+            )
+            tracer.start_root(inputs={
+                "response": response_text[:200],
+                "source_count": len(sources),
+            })
+            tracer.end_root(
+                outputs={
+                    "verdict": result.verdict,
+                    "trust_score": result.trust_score,
+                    "summary": result.summary,
+                },
+                metrics={
+                    "trust_score": result.trust_score,
+                    "hallucination_count": result.hallucination_count,
+                    "claim_count": len(result.claims),
+                },
+            )
+        except Exception as exc:
+            logger.debug("Trace save failed (non-critical): %s", exc)
+
+    # ── Metrics endpoints ────────────────────────────────────────
+
+    @app.get(
+        f"/api/{API_VERSION}/metrics/summary",
+        tags=["Metrics"],
+        summary="Get aggregated metrics summary",
+        dependencies=[Depends(verify_api_key), Depends(check_rate_limit)],
+    )
+    async def metrics_summary(
+        project: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+    ):
+        """Get aggregated verification metrics.
+
+        Query params:
+            project: Filter by project name.
+            start: ISO 8601 datetime (default: 7 days ago).
+            end: ISO 8601 datetime (default: now).
+        """
+        try:
+            from longtracer.guard.cache import get_default_backend
+
+            start_dt = _parse_metrics_time(start, default_offset_days=7)
+            end_dt = _parse_metrics_time(end) or datetime.now(timezone.utc)
+
+            backend = get_default_backend()
+            return backend.get_metrics_summary(
+                project=project,
+                start_time=start_dt,
+                end_time=end_dt,
+            )
+        except Exception as exc:
+            logger.error("Metrics summary error: %s", exc)
+            raise HTTPException(status_code=500, detail="Failed to get metrics.")
+
+    @app.get(
+        f"/api/{API_VERSION}/metrics/timeseries",
+        tags=["Metrics"],
+        summary="Get time-bucketed metrics",
+        dependencies=[Depends(verify_api_key), Depends(check_rate_limit)],
+    )
+    async def metrics_timeseries(
+        project: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        interval: str = "1d",
+    ):
+        """Get time-bucketed verification metrics for charting.
+
+        Query params:
+            project: Filter by project name.
+            start: ISO 8601 datetime (default: 7 days ago).
+            end: ISO 8601 datetime (default: now).
+            interval: Bucket size — "1h", "6h", "1d", "1w" (default: "1d").
+        """
+        try:
+            from longtracer.guard.cache import get_default_backend
+
+            if interval not in ("1h", "6h", "1d", "1w"):
+                interval = "1d"
+
+            start_dt = _parse_metrics_time(start, default_offset_days=7)
+            end_dt = _parse_metrics_time(end) or datetime.now(timezone.utc)
+
+            backend = get_default_backend()
+            return backend.get_metrics_timeseries(
+                project=project,
+                start_time=start_dt,
+                end_time=end_dt,
+                interval=interval,
+            )
+        except Exception as exc:
+            logger.error("Metrics timeseries error: %s", exc)
+            raise HTTPException(status_code=500, detail="Failed to get metrics.")
+
+    # ── Dashboard routes ─────────────────────────────────────────
+
+    # Cookie-based auth helper for dashboard
+    def _check_dashboard_auth(request: Request) -> bool:
+        """Check if the dashboard request has a valid API key cookie.
+        Returns True if authenticated (or if no API key is configured)."""
+        if not api_key:
+            return True  # Dev mode — no auth required
+        cookie_key = request.cookies.get("longtracer_api_key", "")
+        return bool(cookie_key) and secrets.compare_digest(cookie_key, api_key)
+
+    def _get_tracer_for_dashboard():
+        """Get a tracer instance for dashboard data fetching."""
+        try:
+            from longtracer.guard.tracer import Tracer
+            from longtracer.guard.cache import get_default_backend
+            return Tracer(
+                run_name="longtracer_dashboard",
+                backend=get_default_backend(),
+            )
+        except Exception:
+            return None
+
+    def _fmt_dur(ms) -> str:
+        if ms is None:
+            return "N/A"
+        return f"{ms:.0f}ms" if ms < 1000 else f"{ms / 1000:.2f}s"
+
+    def _fmt_dt(dt) -> str:
+        if dt is None:
+            return "N/A"
+        if isinstance(dt, datetime):
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        return str(dt)[:19] if dt else "N/A"
+
+    # Mount static files (must be before routes)
+    if _TEMPLATES_AVAILABLE:
+        try:
+            app.mount(
+                "/static",
+                StaticFiles(directory=str(_DASHBOARD_DIR / "static")),
+                name="dashboard-static",
+            )
+        except Exception as exc:
+            logger.warning("Failed to mount dashboard static files: %s", exc)
+
+    @app.get("/dashboard/login", include_in_schema=False)
+    async def dashboard_login_page(request: Request):
+        """Render the login page."""
+        if not _TEMPLATES_AVAILABLE:
+            return HTMLResponse("<h1>Dashboard unavailable (Jinja2 not installed)</h1>")
+        # If already authenticated, redirect to dashboard
+        if _check_dashboard_auth(request):
+            return RedirectResponse(url="/dashboard", status_code=302)
+        return templates.TemplateResponse(request, "login.html", {
+            "error": None,
+            "api_key_configured": bool(api_key),
+        })
+
+    @app.post("/dashboard/login", include_in_schema=False)
+    async def dashboard_login_submit(request: Request):
+        """Process login form submission."""
+        if not _TEMPLATES_AVAILABLE:
+            return HTMLResponse("<h1>Dashboard unavailable</h1>")
+        form = await request.form()
+        provided_key = form.get("api_key", "")
+
+        # If no API key configured on server, allow any input
+        if not api_key or secrets.compare_digest(provided_key, api_key):
+            response = RedirectResponse(url="/dashboard", status_code=302)
+            response.set_cookie(
+                key="longtracer_api_key",
+                value=provided_key or "",
+                httponly=True,
+                samesite="strict",
+                max_age=86400 * 7,  # 7 days
+            )
+            return response
+
+        return templates.TemplateResponse(request, "login.html", {
+            "error": "Invalid API key. Please try again.",
+            "api_key_configured": bool(api_key),
+        })
+
+    @app.post("/dashboard/logout", include_in_schema=False)
+    async def dashboard_logout():
+        """Clear the auth cookie and redirect to login."""
+        response = RedirectResponse(url="/dashboard/login", status_code=302)
+        response.delete_cookie("longtracer_api_key")
+        return response
+
+    @app.get("/dashboard", include_in_schema=False)
+    async def dashboard_home(request: Request):
+        """Dashboard overview page (metrics placeholder)."""
+        if not _TEMPLATES_AVAILABLE:
+            return HTMLResponse("<h1>Dashboard unavailable (Jinja2 not installed)</h1>")
+        if not _check_dashboard_auth(request):
+            return RedirectResponse(url="/dashboard/login", status_code=302)
+
+        tracer = _get_tracer_for_dashboard()
+        projects = []
+        if tracer:
+            try:
+                traces = tracer.list_recent_traces(limit=100)
+                projects = sorted(set(
+                    t.get("project_name", "") for t in traces if t.get("project_name")
+                ))
+            except Exception:
+                pass
+
+        return templates.TemplateResponse(request, "metrics.html", {
+            "page": "metrics",
+            "projects": projects,
+            "selected_project": None,
+            "api_key_configured": bool(api_key),
+            "error_message": None,
+        })
+
+    @app.get("/dashboard/traces", include_in_schema=False)
+    async def dashboard_traces(
+        request: Request,
+        page: int = 1,
+        project: Optional[str] = None,
+    ):
+        """Trace list page with pagination and project filter."""
+        if not _TEMPLATES_AVAILABLE:
+            return HTMLResponse("<h1>Dashboard unavailable</h1>")
+        if not _check_dashboard_auth(request):
+            return RedirectResponse(url="/dashboard/login", status_code=302)
+
+        per_page = 20
+        tracer = _get_tracer_for_dashboard()
+        traces_raw = []
+        projects = []
+
+        if tracer:
+            try:
+                all_traces = tracer.list_recent_traces(limit=500, project_name=project or None)
+                projects = sorted(set(
+                    t.get("project_name", "") for t in all_traces if t.get("project_name")
+                ))
+                traces_raw = all_traces
+            except Exception:
+                pass
+
+        # Format traces for display
+        traces = []
+        for t in traces_raw:
+            traces.append({
+                "trace_id": t.get("trace_id", ""),
+                "project_name": t.get("project_name", ""),
+                "trust_score": t.get("trust_score"),
+                "hallucination_count": t.get("hallucination_count"),
+                "claim_count": t.get("claim_count"),
+                "duration_ms": t.get("duration_ms"),
+                "duration_fmt": _fmt_dur(t.get("duration_ms")),
+                "created_at": t.get("created_at"),
+                "created_fmt": _fmt_dt(t.get("created_at")),
+            })
+
+        # Pagination
+        total = len(traces)
+        total_pages = max(1, (total + per_page - 1) // per_page)
+        page = max(1, min(page, total_pages))
+        start_idx = (page - 1) * per_page
+        traces_page = traces[start_idx:start_idx + per_page]
+
+        return templates.TemplateResponse(request, "traces.html", {
+            "page": "traces",
+            "traces": traces_page,
+            "projects": projects,
+            "selected_project": project,
+            "page_num": page,
+            "total_pages": total_pages,
+            "api_key_configured": bool(api_key),
+            "error_message": None,
+        })
+
+    @app.get("/dashboard/traces/{trace_id}", include_in_schema=False)
+    async def dashboard_trace_detail(request: Request, trace_id: str):
+        """Single trace detail page."""
+        if not _TEMPLATES_AVAILABLE:
+            return HTMLResponse("<h1>Dashboard unavailable</h1>")
+        if not _check_dashboard_auth(request):
+            return RedirectResponse(url="/dashboard/login", status_code=302)
+
+        tracer = _get_tracer_for_dashboard()
+        if not tracer:
+            return HTMLResponse("<h1>No data source configured</h1>", status_code=503)
+
+        trace = tracer.get_trace(trace_id)
+        if not trace:
+            return HTMLResponse(
+                '<h1>Trace Not Found</h1><p>The requested trace does not exist.</p>'
+                '<a href="/dashboard/traces">← Back to Traces</a>',
+                status_code=404,
+            )
+
+        # Get child runs
+        runs_raw = tracer.get_runs_by_trace(trace_id)
+        child_runs = [r for r in runs_raw if r.get("run_id") != trace_id]
+
+        # Format runs for display
+        runs = []
+        for r in child_runs:
+            runs.append({
+                "name": r.get("name", "unknown"),
+                "run_type": r.get("run_type", "chain"),
+                "duration_ms": r.get("duration_ms"),
+                "duration_fmt": _fmt_dur(r.get("duration_ms")),
+                "error": r.get("error"),
+                "outputs": r.get("outputs", {}),
+            })
+
+        # Format trace for display
+        trace_display = {
+            "trace_id": trace.get("trace_id", ""),
+            "project_name": trace.get("project_name", ""),
+            "run_name": trace.get("run_name", ""),
+            "trust_score": trace.get("trust_score"),
+            "hallucination_count": trace.get("hallucination_count"),
+            "claim_count": trace.get("claim_count"),
+            "duration_ms": trace.get("duration_ms"),
+            "duration_fmt": _fmt_dur(trace.get("duration_ms")),
+            "created_at": trace.get("created_at"),
+            "created_fmt": _fmt_dt(trace.get("created_at")),
+            "inputs": trace.get("inputs", {}),
+            "outputs": trace.get("outputs", {}),
+        }
+
+        claim_evidence_map = trace.get("claim_evidence_map", {})
+
+        return templates.TemplateResponse(request, "trace_detail.html", {
+            "page": "traces",
+            "trace": trace_display,
+            "runs": runs,
+            "claim_evidence_map": claim_evidence_map,
+            "api_key_configured": bool(api_key),
+            "error_message": None,
+        })
 
     # ── Global error handler ────────────────────────────────
 

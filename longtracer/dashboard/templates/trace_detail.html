@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Trace {{ trace.trace_id[:12] }}… — LongTracer Dashboard{% endblock %}
+{% set page = "traces" %}
+
+{% block content %}
+<div class="page-header">
+  <a href="/dashboard/traces" class="btn btn-secondary">← Back to Traces</a>
+  <h1>Trace Detail</h1>
+</div>
+
+<!-- Trace metadata -->
+<div class="detail-card">
+  <div class="detail-grid">
+    <div class="detail-item">
+      <span class="detail-label">Trace ID</span>
+      <span class="detail-value mono">{{ trace.trace_id }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Project</span>
+      <span class="detail-value">{{ trace.project_name or '—' }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Duration</span>
+      <span class="detail-value mono">{{ trace.duration_fmt }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Created</span>
+      <span class="detail-value">{{ trace.created_fmt }}</span>
+    </div>
+    {% if trace.trust_score is not none %}
+    <div class="detail-item">
+      <span class="detail-label">Trust Score</span>
+      <span class="detail-value score {% if trace.trust_score >= 0.7 %}score-high{% elif trace.trust_score >= 0.4 %}score-mid{% else %}score-low{% endif %}">
+        {{ "%.2f"|format(trace.trust_score) }}
+      </span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Verdict</span>
+      <span class="detail-value">
+        {% if trace.trust_score >= 0.5 %}
+        <span class="badge badge-pass">PASS</span>
+        {% else %}
+        <span class="badge badge-fail">FAIL</span>
+        {% endif %}
+      </span>
+    </div>
+    {% if trace.hallucination_count is not none %}
+    <div class="detail-item">
+      <span class="detail-label">Hallucinations</span>
+      <span class="detail-value">{{ trace.hallucination_count }}</span>
+    </div>
+    {% endif %}
+    {% if trace.claim_count is not none %}
+    <div class="detail-item">
+      <span class="detail-label">Claims</span>
+      <span class="detail-value">{{ trace.claim_count }}</span>
+    </div>
+    {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<!-- Inputs -->
+{% if trace.inputs and trace.inputs.items()|length > 0 %}
+<div class="detail-card">
+  <h2 class="card-title">Inputs</h2>
+  <pre class="code-block">{{ trace.inputs | tojson(indent=2) }}</pre>
+</div>
+{% endif %}
+
+<!-- Outputs -->
+{% if trace.outputs and trace.outputs.items()|length > 0 %}
+<div class="detail-card">
+  <h2 class="card-title">Outputs</h2>
+  <pre class="code-block">{{ trace.outputs | tojson(indent=2) }}</pre>
+</div>
+{% endif %}
+
+<!-- Span timeline -->
+{% if runs %}
+<div class="detail-card">
+  <h2 class="card-title">Pipeline Spans ({{ runs|length }})</h2>
+  <div class="spans-list">
+    {% for run in runs %}
+    <div class="span-item {% if run.error %}span-error{% endif %}">
+      <div class="span-header">
+        <span class="span-name">{{ run.name or 'unknown' }}</span>
+        <span class="span-status">{% if run.error %}✕ ERR{% else %}✓ OK{% endif %}</span>
+        <span class="span-duration mono">{{ run.duration_fmt }}</span>
+      </div>
+      {% if run.error %}
+      <div class="span-error-msg">{{ run.error }}</div>
+      {% endif %}
+      {% if run.outputs and run.outputs.items()|length > 0 %}
+      <details class="span-details">
+        <summary>Outputs</summary>
+        <pre class="code-block small">{{ run.outputs | tojson(indent=2) }}</pre>
+      </details>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Claim Evidence Map -->
+{% if claim_evidence_map and claim_evidence_map.items()|length > 0 %}
+<div class="detail-card">
+  <h2 class="card-title">Claim → Evidence Map</h2>
+  <div class="evidence-list">
+    {% for claim, evidences in claim_evidence_map.items() %}
+    <div class="evidence-item">
+      <div class="evidence-claim">"{{ claim[:80 }}{% if claim|length > 80 %}…{% endif %}"</div>
+      <div class="evidence-sources">
+        {% for src, score in evidences.items() %}
+        <div class="evidence-source">
+          <div class="evidence-bar">
+            <div class="evidence-bar-fill" style="width: {{ (score * 100)|int }}%"></div>
+          </div>
+          <span class="evidence-score">{{ "%.2f"|format(score) }}</span>
+          <span class="evidence-text">← "{{ src[:60 }}{% if src|length > 60 %}…{% endif %}"</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

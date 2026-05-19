@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Traces — LongTracer Dashboard{% endblock %}
+{% set page = "traces" %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Traces</h1>
+  <div class="header-actions">
+    <form method="GET" action="/dashboard/traces" class="filter-form">
+      <select name="project" class="input-field" onchange="this.form.submit()">
+        <option value="">All Projects</option>
+        {% for p in projects %}
+        <option value="{{ p }}" {% if selected_project == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+</div>
+
+{% if traces %}
+<div class="traces-table-container">
+  <table class="traces-table">
+    <thead>
+      <tr>
+        <th>Trace ID</th>
+        <th>Project</th>
+        <th>Verdict</th>
+        <th>Trust Score</th>
+        <th>Duration</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in traces %}
+      <tr class="trace-row" onclick="window.location='/dashboard/traces/{{ t.trace_id }}'">
+        <td class="mono">{{ t.trace_id[:12] }}…</td>
+        <td>{{ t.project_name or '—' }}</td>
+        <td>
+          {% if t.trust_score is not none %}
+            {% if t.trust_score >= 0.5 %}
+            <span class="badge badge-pass">PASS</span>
+            {% else %}
+            <span class="badge badge-fail">FAIL</span>
+            {% endif %}
+          {% else %}
+          <span class="badge badge-na">N/A</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if t.trust_score is not none %}
+          <span class="score {% if t.trust_score >= 0.7 %}score-high{% elif t.trust_score >= 0.4 %}score-mid{% else %}score-low{% endif %}">
+            {{ "%.2f"|format(t.trust_score) }}
+          </span>
+          {% else %}—{% endif %}
+        </td>
+        <td class="mono">{{ t.duration_fmt }}</td>
+        <td>{{ t.created_fmt }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="pagination">
+  {% if page_num > 1 %}
+  <a href="/dashboard/traces?page={{ page_num - 1 }}{% if selected_project %}&project={{ selected_project }}{% endif %}" class="btn btn-secondary">← Previous</a>
+  {% endif %}
+  <span class="pagination-info">Page {{ page_num }} of {{ total_pages }}</span>
+  {% if page_num < total_pages %}
+  <a href="/dashboard/traces?page={{ page_num + 1 }}{% if selected_project %}&project={{ selected_project }}{% endif %}" class="btn btn-secondary">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <span class="empty-icon">📭</span>
+  <h2>No traces found</h2>
+  <p>Run a verification through the API to see traces here.</p>
+  <code class="code-block">curl -X POST http://localhost:8100/api/v1/verify \
+  -H "x-api-key: YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"response": "...", "sources": ["..."]}'</code>
+</div>
+{% endif %}
+{% endblock %}

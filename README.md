@@ -30,6 +30,23 @@ Detect hallucinations in LLM-generated responses. LongTracer verifies every clai
 pip install longtracer
 ```
 
+### 🎬 Demo
+
+**Interactive TUI Demo — full verification workflow:**
+
+![LongTracer TUI Demo](demo-vhs-gifs/tui-demo.gif)
+
+**Python API — one-liner verification:**
+
+![LongTracer Python API](demo-vhs-gifs/python-api.gif)
+
+**Web Dashboard — browse metrics and traces locally:**
+
+![LongTracer Dashboard](assets/dashboard.png)
+> *Note: Please save a screenshot of http://localhost:8100/dashboard to `assets/dashboard.png`*
+
+**Full TUI workflow demo:** `python demos/hallucination_detection.py`
+
 ### One-Liner & Batch API
 
 ```python
@@ -168,6 +185,26 @@ result = await verifier.verify_parallel_async(response, sources)
 ```
 
 Works with Haystack, custom pipelines, or any code that produces strings.
+
+## Observability & Analytics
+
+LongTracer **v0.2.0** introduces a complete, production-ready observability suite.
+
+### Built-in Web Dashboard
+Browse all your verified RAG traces, hallucination rates, and metrics locally.
+```bash
+longtracer serve
+```
+Then visit `http://localhost:8000/dashboard` in your browser.
+
+### Alerts & Notifications
+Automatically trigger Webhooks, Slack, Discord, or Email notifications when an LLM's trust score drops below your acceptable threshold. Configured easily via environment variables or `pyproject.toml`.
+
+### OpenTelemetry Export
+```bash
+pip install "longtracer[otel]"
+```
+Automatically emits standard OTLP traces (`longtracer.verify`) with attributes like `trust_score`, `hallucination_count`, and `verdict`. Fully compatible with Jaeger, Datadog, Honeycomb, or Grafana Tempo. We also include a pre-configured [Grafana Dashboard Template](grafana/longtracer.json).
 
 ## Multi-Project Tracing
 

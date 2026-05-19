@@ -226,9 +226,167 @@ class SQLiteBackend(TraceCacheBackend):
     def is_connected(self) -> bool:
         """Check SQLite connection status."""
         return self._connected
-    
+
     def close(self):
         """Close SQLite connection."""
         if self._conn:
             self._conn.close()
             self._connected = False
+
+    # ── Optimized metrics overrides ─────────────────────────────
+
+    def get_metrics_summary(
+        self,
+        project: Optional[str] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+    ) -> dict:
+        """Optimized metrics summary using SQLite json_extract."""
+        if not self._connected:
+            return self._empty_summary(project, start_time, end_time)
+
+        try:
+            cursor = self._conn.cursor()
+            conditions = [
+                "json_extract(data, '$.trust_score') IS NOT NULL",
+            ]
+            params: list = []
+
+            if project:
+                conditions.append("project_name = ?")
+                params.append(project)
+
+            if start_time:
+                conditions.append("created_at >= ?")
+                params.append(start_time.isoformat())
+
+            if end_time:
+                conditions.append("created_at <= ?")
+                params.append(end_time.isoformat())
+
+            where = " AND ".join(conditions)
+            query = f"""
+                SELECT
+                    COUNT(*) as total_traces,
+                    AVG(CAST(json_extract(data, '$.trust_score') AS REAL)) as avg_trust_score,
+                    MIN(CAST(json_extract(data, '$.trust_score') AS REAL)) as min_trust_score,
+                    MAX(CAST(json_extract(data, '$.trust_score') AS REAL)) as max_trust_score,
+                    SUM(CAST(json_extract(data, '$.hallucination_count') AS INTEGER)) as total_hallucinations,
+                    SUM(CAST(json_extract(data, '$.claim_count') AS INTEGER)) as total_claims,
+                    SUM(CASE WHEN CAST(json_extract(data, '$.trust_score') AS REAL) >= 0.5 THEN 1 ELSE 0 END) as pass_count
+                FROM traces
+                WHERE {where}
+            """
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+
+            if not row or row[0] == 0:
+                return self._empty_summary(project, start_time, end_time)
+
+            total_traces = row[0]
+            total_hall = int(row[4] or 0)
+            total_claims = int(row[5] or 0)
+            pass_count = int(row[6] or 0)
+
+            return {
+                "project": project,
+                "start_time": start_time.isoformat() if start_time else None,
+                "end_time": end_time.isoformat() if end_time else None,
+                "total_traces": total_traces,
+                "avg_trust_score": round(float(row[1]), 4) if row[1] is not None else None,
+                "min_trust_score": round(float(row[2]), 4) if row[2] is not None else None,
+                "max_trust_score": round(float(row[3]), 4) if row[3] is not None else None,
+                "pass_rate": round(pass_count / total_traces, 4),
+                "total_hallucinations": total_hall,
+                "total_claims": total_claims,
+                "hallucination_rate": round(
+                    total_hall / total_claims, 4
+                ) if total_claims > 0 else None,
+            }
+        except Exception as e:
+            import logging
+            logging.getLogger("longtracer").warning(
+                "SQLite metrics summary failed: %s", e
+            )
+            return self._empty_summary(project, start_time, end_time)
+
+    def get_metrics_timeseries(
+        self,
+        project: Optional[str] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        interval: str = "1d",
+    ) -> dict:
+        """Optimized metrics timeseries using SQLite json_extract."""
+        if not self._connected:
+            return {"project": project, "interval": interval, "data_points": []}
+
+        try:
+            # Determine bucket format based on interval
+            if interval == "1h":
+                bucket_expr = "strftime('%Y-%m-%dT%H:00', created_at)"
+            elif interval == "6h":
+                bucket_expr = "strftime('%Y-%m-%dT', created_at) || ((CAST(strftime('%H', created_at) AS INTEGER) / 6) * 6) || ':00'"
+            elif interval == "1w":
+                bucket_expr = "strftime('%Y-W%W', created_at)"
+            else:  # 1d
+                bucket_expr = "strftime('%Y-%m-%d', created_at)"
+
+            conditions = [
+                "json_extract(data, '$.trust_score') IS NOT NULL",
+            ]
+            params: list = []
+
+            if project:
+                conditions.append("project_name = ?")
+                params.append(project)
+
+            if start_time:
+                conditions.append("created_at >= ?")
+                params.append(start_time.isoformat())
+
+            if end_time:
+                conditions.append("created_at <= ?")
+                params.append(end_time.isoformat())
+
+            where = " AND ".join(conditions)
+            query = f"""
+                SELECT
+                    {bucket_expr} as bucket,
+                    COUNT(*) as trace_count,
+                    AVG(CAST(json_extract(data, '$.trust_score') AS REAL)) as avg_trust_score,
+                    SUM(CAST(json_extract(data, '$.hallucination_count') AS INTEGER)) as hallucination_count,
+                    SUM(CAST(json_extract(data, '$.claim_count') AS INTEGER)) as claim_count,
+                    SUM(CASE WHEN CAST(json_extract(data, '$.trust_score') AS REAL) >= 0.5 THEN 1 ELSE 0 END) as pass_count
+                FROM traces
+                WHERE {where}
+                GROUP BY bucket
+                ORDER BY bucket
+            """
+            cursor = self._conn.cursor()
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+            data_points = []
+            for row in rows:
+                tc = int(row[1])
+                data_points.append({
+                    "bucket": row[0],
+                    "trace_count": tc,
+                    "avg_trust_score": round(float(row[2]), 4) if row[2] is not None else None,
+                    "hallucination_count": int(row[3] or 0),
+                    "claim_count": int(row[4] or 0),
+                    "pass_rate": round(int(row[5] or 0) / tc, 4) if tc > 0 else None,
+                })
+
+            return {
+                "project": project,
+                "interval": interval,
+                "data_points": data_points,
+            }
+        except Exception as e:
+            import logging
+            logging.getLogger("longtracer").warning(
+                "SQLite metrics timeseries failed: %s", e
+            )
+            return {"project": project, "interval": interval, "data_points": []}
