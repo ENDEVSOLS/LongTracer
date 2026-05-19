@@ -15,7 +15,7 @@ pip install longtracer rich
 ## Running the Demo
 
 ```bash
-python demos/longtracer_demo.py
+python demos/hallucination_detection.py
 ```
 
 ### What to expect:

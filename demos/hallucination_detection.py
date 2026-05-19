@@ -136,7 +136,7 @@ def main():
         live.update(Panel(f"[green]✅ Models loaded successfully in {t1-t0:.2f}s[/green]", border_style="green"))
     
     console.print()
-    time.sleep(1)
+    time.sleep(3)
 
     # 3. Scenario 1: Clean Pass
     resp1 = "Water boils at 100°C at standard atmospheric pressure."
@@ -149,7 +149,7 @@ def main():
         live.update(create_result_panel("✅ Scenario 1: Clean Pass", res1, resp1, src1, t1-t0))
         
     console.print()
-    time.sleep(2)
+    time.sleep(3)
 
     # 4. Scenario 2: Obvious Hallucination
     resp2 = "The Eiffel Tower is 330 meters tall and located in Berlin."
@@ -162,7 +162,7 @@ def main():
         live.update(create_result_panel("🚨 Scenario 2: Obvious Hallucination", res2, resp2, src2, t1-t0))
 
     console.print()
-    time.sleep(2)
+    time.sleep(3)
 
     # 5. Scenario 3: Subtle Fabrication
     resp3 = "Python was created by James Gosling and released in 1991."
@@ -175,7 +175,7 @@ def main():
         live.update(create_result_panel("🔍 Scenario 3: Subtle Fabrication", res3, resp3, src3, t1-t0))
 
     console.print()
-    time.sleep(2)
+    time.sleep(3)
     
     # 6. Batch Summary
     console.print(Panel(
