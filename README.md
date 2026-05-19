@@ -30,6 +30,18 @@ Detect hallucinations in LLM-generated responses. LongTracer verifies every clai
 pip install longtracer
 ```
 
+### 🎬 Demo
+
+**CLI — catch a hallucination in one command:**
+
+![LongTracer CLI Demo](demo-vhs-gifs/cli-check.gif)
+
+**Python API — one-liner verification:**
+
+![LongTracer Python API](demo-vhs-gifs/python-api.gif)
+
+**Full TUI workflow demo:** `python demos/longtracer_demo.py`
+
 ### One-Liner & Batch API
 
 ```python
