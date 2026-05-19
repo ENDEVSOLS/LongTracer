@@ -32,13 +32,18 @@ pip install longtracer
 
 ### 🎬 Demo
 
-**CLI — catch a hallucination in one command:**
+**Interactive TUI Demo — full verification workflow:**
 
-![LongTracer CLI Demo](demo-vhs-gifs/cli-check.gif)
+![LongTracer TUI Demo](demo-vhs-gifs/tui-demo.gif)
 
 **Python API — one-liner verification:**
 
 ![LongTracer Python API](demo-vhs-gifs/python-api.gif)
+
+**Web Dashboard — browse metrics and traces locally:**
+
+![LongTracer Dashboard](assets/dashboard.png)
+> *Note: Please save a screenshot of http://localhost:8100/dashboard to `assets/dashboard.png`*
 
 **Full TUI workflow demo:** `python demos/longtracer_demo.py`
 

@@ -1,7 +1,7 @@
 Output demo-vhs-gifs/cli-check.gif
 
 Set Shell "bash"
-Set FontSize 20
+Set FontSize 15
 Set Width 1200
 Set Height 600
 Set Theme "Dracula"
@@ -10,7 +10,7 @@ Set Padding 16
 
 # Hidden: activate venv and pre-warm models
 Hide
-Type "source .venv/bin/activate"
+Type "source .venv/bin/activate && export HF_HUB_OFFLINE=1"
 Enter
 Type 'longtracer check "a" "b"'
 Enter
