@@ -120,7 +120,7 @@ include = [
     "pyproject.toml",
 ]
 
-# ── Dev tooling ─────────────────────────────────
+# ── Dev tooling ─────────────────────────────────────────────────
 
 [tool.ruff]
 target-version = "py310"
