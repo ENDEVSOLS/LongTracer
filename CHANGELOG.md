@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **EvalPort adapter** (`longtracer[evalport]`): `to_openeval(result, ...)` — export any `VerificationResult` (or a batch, e.g. from `CitationVerifier.verify_batch()`) to an [EvalPort](https://github.com/adhabnr-ux/evalport) `ResultSet`, a small open interchange format for portable LLM evaluation results. Response-level fields (`trust_score`, `verdict`, `summary`, `latency_stats`) and claim-level evidence (`supported`, `score`, `best_source`, `is_hallucination`) are direct passthroughs — nothing is recalculated, and unsupported claims stay distinct from confirmed hallucinations. Also available as `longtracer.to_openeval` and `longtracer.adapters.to_openeval`. Has no hard dependency on `evalport-sdk` — the optional extra only sharpens the `version` field reported in the exported `ResultSet`. See `docs/integrations/evalport.md`.
+
 ## [0.2.0] - 2026-05-18
 
 ### Added
@@ -151,4 +156,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `store.py` collection_name parameter passthrough
 - `context_relevance.py` duplicate chunk ID lookup
 - SQLite trace backend thread safety with WAL mode
-

@@ -97,8 +97,11 @@ otel = [
     "opentelemetry-sdk>=1.20",
     "opentelemetry-exporter-otlp-proto-http>=1.20",
 ]
+evalport = [
+    "evalport-sdk>=1.0.0",
+]
 all = [
-    "longtracer[langchain,llamaindex,haystack,langgraph,mongo,chroma,postgres,redis,slm,openai,crewai,autogen,server,otel]",
+    "longtracer[langchain,llamaindex,haystack,langgraph,mongo,chroma,postgres,redis,slm,openai,crewai,autogen,server,otel,evalport]",
 ]
 docs = [
     "mkdocs-material>=9.0",
@@ -117,7 +120,7 @@ include = [
     "pyproject.toml",
 ]
 
-# ── Dev tooling ─────────────────────────────────────────────────
+# ── Dev tooling ─────────────────────────────────
 
 [tool.ruff]
 target-version = "py310"
