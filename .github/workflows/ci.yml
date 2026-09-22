@@ -42,9 +42,37 @@ jobs:
       - name: Run tests
         run: pytest tests/ -v --tb=short --cov=longtracer --cov-report=term-missing
 
+  test-evalport:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-evalport-${{ hashFiles('pyproject.toml') }}
+
+      - name: Install package with the evalport extra
+        run: pip install -e ".[evalport]" pytest pytest-cov
+
+      - name: Run full test suite against the real EvalPort validator
+        run: pytest tests/ -v --tb=short --cov=longtracer --cov-report=term-missing -W error::pytest.PytestUnraisableExceptionWarning
+
+      - name: Confirm the schema-validation tests actually ran (not skipped)
+        run: |
+          pytest tests/test_evalport_adapter.py -v -k "validate_result_set or schema" -rs | tee /tmp/evalport_test_output.txt
+          if grep -q "SKIPPED" /tmp/evalport_test_output.txt; then
+            echo "::error::A real-schema-validation test was skipped even with the evalport extra installed — evalport-sdk import must have failed silently."
+            exit 1
+          fi
+
   build:
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs: [lint, test, test-evalport]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
