@@ -63,6 +63,10 @@ def __getattr__(name: str):
         )
         return instrument_autogen if name == "instrument_autogen" else verify_autogen_result
 
+    if name == "to_openeval":
+        from longtracer.adapters.evalport import to_openeval
+        return to_openeval
+
     raise AttributeError(f"module 'longtracer.adapters' has no attribute {name!r}")
 
 
@@ -89,4 +93,6 @@ __all__ = [
     # AutoGen
     "instrument_autogen",
     "verify_autogen_result",
+    # EvalPort
+    "to_openeval",
 ]
