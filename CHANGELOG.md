@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`longtracer doctor`** — new CLI command that inspects installation health
+  without mutating any data or traces. Checks performed:
+  - Python version (≥3.10 required)
+  - `longtracer` package version
+  - Core dependencies: pydantic, sentence_transformers, transformers, numpy
+  - STS model cached (all-MiniLM-L6-v2) and NLI model cached (nli-deberta-v3-xsmall)
+  - Optional extras: otel, server, mongo, postgres, redis, slm, langchain,
+    langgraph, llamaindex, haystack
+  - `~/.longtracer` directory writable (default SQLite storage)
+  - `[tool.longtracer]` pyproject.toml config present
+  - `LONGTRACER_*` environment variables
+  - Default backend connectivity
+  - Exits with code 0 (healthy) or 1 (errors found).
+- **`longtracer models prepare`** — new CLI command that pre-downloads the STS
+  and NLI model weights (~180 MB total) to the local HuggingFace cache.
+  Eliminates the cold-start download that previously blocked the first
+  `longtracer check` call. Safe to re-run; cached weights are reused instantly.
+  Reports per-model load time and exits 1 on download failure.
+
+### Fixed
+- `longtracer serve` default port corrected from `8100` to `8000` to match
+  the documented dashboard URL (`http://localhost:8000/dashboard`).
+  Users who previously relied on the undocumented `8100` default should pass
+  `--port 8100` explicitly.
+
 ## [0.2.0] - 2026-05-18
 
 ### Added

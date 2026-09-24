@@ -10,10 +10,15 @@ Usage:
     longtracer view --export <trace_id> # export trace to JSON
     longtracer view --html <trace_id>   # export trace to HTML
     longtracer view --project <name>    # filter by project
+    longtracer check <response> <src>   # one-shot hallucination check
+    longtracer serve                    # start REST API + dashboard server
+    longtracer doctor                   # inspect installation health
+    longtracer models prepare           # pre-download model weights
 """
 
 import argparse
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -176,19 +181,18 @@ def cmd_export_html(args):
 def cmd_check(args):
     """Run a one-shot hallucination check from the CLI."""
     import json as _json
-    import sys as _sys
     from longtracer.guard.verifier import CitationVerifier
 
     if args.json_output:
         # Suppress model-loading progress bars that pollute JSON stdout
-        _orig_stdout = _sys.stdout
-        _sys.stdout = open(os.devnull, "w")
+        _orig_stdout = sys.stdout
+        sys.stdout = open(os.devnull, "w")
         try:
             verifier = CitationVerifier(threshold=args.threshold)
             result = verifier.verify_parallel(args.response, args.sources)
         finally:
-            _sys.stdout.close()
-            _sys.stdout = _orig_stdout
+            sys.stdout.close()
+            sys.stdout = _orig_stdout
     else:
         verifier = CitationVerifier(threshold=args.threshold)
         result = verifier.verify_parallel(args.response, args.sources)
@@ -212,7 +216,7 @@ def cmd_check(args):
         print(_json.dumps(out, indent=2))
         return
 
-    icon = "✓" if result.verdict == "PASS" else "✗"
+    icon = "\u2713" if result.verdict == "PASS" else "\u2717"
     print(
         f"\n{icon} {result.verdict}  "
         f"trust={result.trust_score:.2f}  "
@@ -220,16 +224,16 @@ def cmd_check(args):
     )
     print(f"  {result.summary}\n")
     for c in result.claims:
-        status = "✓" if c.get("supported") else "✗"
+        status = "\u2713" if c.get("supported") else "\u2717"
         hall = " [HALLUCINATION]" if c.get("is_hallucination") else ""
         print(f"  {status} {c.get('claim', '')[:100]}{hall}")
         if c.get("best_source"):
-            print(f"    ↳ source: {c['best_source'][:80]}")
+            print(f"    \u21b3 source: {c['best_source'][:80]}")
     print()
 
 
 def cmd_serve(args):
-    """Start the REST API server."""
+    """Start the REST API and dashboard server."""
     try:
         from longtracer.server import run_server
     except ImportError:
@@ -238,7 +242,8 @@ def cmd_serve(args):
             "Install with: pip install 'longtracer[server]'"
         )
         return
-    print(f"Starting LongTracer API server on {args.host}:{args.port}")
+    print(f"Starting LongTracer server on http://{args.host}:{args.port}")
+    print(f"Dashboard: http://localhost:{args.port}/dashboard")
     run_server(
         host=args.host,
         port=args.port,
@@ -247,13 +252,303 @@ def cmd_serve(args):
     )
 
 
+# ---------------------------------------------------------------------------
+# doctor  (Roadmap Queue 6 — longtracer doctor)
+# ---------------------------------------------------------------------------
+
+def _print_check(label: str, ok: bool, detail: str = "", warn: bool = False) -> bool:
+    """Print a single health-check result line. Returns True if ok."""
+    if ok and not warn:
+        icon = "  \u2713"       # ✓
+    elif warn:
+        icon = "  \u26a0"       # ⚠
+    else:
+        icon = "  \u2717"       # ✗
+    suffix = f"  \u2014 {detail}" if detail else ""  # em-dash
+    print(f"{icon}  {label}{suffix}")
+    return ok and not warn
+
+
+def cmd_doctor(args):  # noqa: C901
+    """
+    Inspect the LongTracer installation and report health.
+
+    All checks are read-only — this command never mutates user data or traces.
+
+    Checks performed:
+      - Python version (>=3.10 required)
+      - longtracer package installed and version
+      - Core dependencies: pydantic, sentence_transformers, transformers, numpy
+      - STS model cached  (sentence-transformers/all-MiniLM-L6-v2)
+      - NLI model cached  (cross-encoder/nli-deberta-v3-xsmall)
+      - Optional extras:  otel, server, mongo, postgres, redis, slm, langchain,
+                          langgraph, llamaindex, haystack
+      - ~/.longtracer directory writable (SQLite default storage)
+      - pyproject.toml [tool.longtracer] config present
+      - LONGTRACER_* environment variables set
+      - Default backend connectivity
+    """
+    import importlib
+    import importlib.metadata
+    import tempfile
+
+    errors = 0
+    warnings = 0
+
+    print()
+    print("=" * 62)
+    print("  longtracer doctor")
+    print("=" * 62)
+
+    # ── Runtime ──────────────────────────────────────────────────
+    print("\n[ Runtime ]")
+    py_ver = sys.version_info
+    py_ok = (py_ver.major, py_ver.minor) >= (3, 10)
+    ver_str = f"{py_ver.major}.{py_ver.minor}.{py_ver.micro}"
+    if not _print_check("Python version", py_ok, ver_str):
+        if py_ok:
+            warnings += 1
+        else:
+            errors += 1
+
+    try:
+        pkg_ver = importlib.metadata.version("longtracer")
+        _print_check("longtracer", True, f"v{pkg_ver}")
+    except importlib.metadata.PackageNotFoundError:
+        _print_check("longtracer", False, "not found in environment")
+        errors += 1
+
+    # ── Core dependencies ────────────────────────────────────────
+    print("\n[ Core dependencies ]")
+    for dep in ("pydantic", "sentence_transformers", "transformers", "numpy"):
+        try:
+            m = importlib.import_module(dep)
+            dep_ver = getattr(m, "__version__", "?")
+            _print_check(dep, True, f"v{dep_ver}")
+        except ImportError:
+            _print_check(dep, False, "not installed")
+            errors += 1
+
+    # ── Model cache ──────────────────────────────────────────────
+    print("\n[ Model cache ]")
+
+    def _is_model_cached(model_id: str) -> bool:
+        """Check if a HuggingFace model is present in the local cache."""
+        hf_home = os.environ.get("HF_HOME", str(Path.home() / ".cache" / "huggingface"))
+        hub = Path(hf_home) / "hub"
+        safe_name = "models--" + model_id.replace("/", "--")
+        model_dir = hub / safe_name
+        return model_dir.exists() and any(
+            f.suffix in (".bin", ".safetensors", ".pt")
+            for f in model_dir.rglob("*")
+        )
+
+    sts_id = "sentence-transformers/all-MiniLM-L6-v2"
+    sts_ok = _is_model_cached(sts_id)
+    if not _print_check(
+        "STS bi-encoder  (all-MiniLM-L6-v2)",
+        sts_ok,
+        "cached" if sts_ok else "not cached \u2014 run: longtracer models prepare",
+        warn=not sts_ok,
+    ):
+        warnings += 1
+
+    nli_id = "cross-encoder/nli-deberta-v3-xsmall"
+    nli_ok = _is_model_cached(nli_id)
+    if not _print_check(
+        "NLI cross-encoder  (nli-deberta-v3-xsmall)",
+        nli_ok,
+        "cached" if nli_ok else "not cached \u2014 run: longtracer models prepare",
+        warn=not nli_ok,
+    ):
+        warnings += 1
+
+    # ── Optional extras ──────────────────────────────────────────
+    print("\n[ Optional extras ]")
+    _EXTRAS = [
+        ("otel",                "opentelemetry.sdk"),
+        ("server (FastAPI)",    "fastapi"),
+        ("mongo",               "pymongo"),
+        ("postgres",            "psycopg2"),
+        ("redis",               "redis"),
+        ("slm (llama-cpp)",     "llama_cpp"),
+        ("langchain",           "langchain"),
+        ("langgraph",           "langgraph"),
+        ("llamaindex",          "llama_index"),
+        ("haystack",            "haystack"),
+    ]
+    for label, mod in _EXTRAS:
+        try:
+            importlib.import_module(mod)
+            _print_check(label, True, "installed")
+        except ImportError:
+            _print_check(label, True, "not installed (optional)", warn=True)
+            # Warnings only — extras are optional by design
+
+    # ── Storage writability ──────────────────────────────────────
+    print("\n[ Storage ]")
+    default_dir = Path.home() / ".longtracer"
+    try:
+        default_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=default_dir, delete=True):
+            pass
+        _print_check("~/.longtracer writable", True, str(default_dir))
+    except OSError as exc:
+        _print_check("~/.longtracer writable", False, str(exc))
+        errors += 1
+
+    # ── Configuration ────────────────────────────────────────────
+    print("\n[ Configuration ]")
+    from longtracer.config import load_config, _find_pyproject
+    pyproject_path = _find_pyproject()
+    if pyproject_path:
+        cfg = load_config()
+        cfg_keys = ", ".join(cfg.keys()) if cfg else "(defaults only)"
+        _print_check("pyproject.toml", True, str(pyproject_path))
+        _print_check("[tool.longtracer] keys", True, cfg_keys)
+    else:
+        _print_check("pyproject.toml", True, "not found \u2014 using built-in defaults", warn=True)
+        warnings += 1
+
+    lt_env = sorted(k for k in os.environ if k.startswith("LONGTRACER_"))
+    if lt_env:
+        _print_check("LONGTRACER_* env vars", True, ", ".join(lt_env))
+    else:
+        _print_check("LONGTRACER_* env vars", True, "none set \u2014 using defaults", warn=True)
+
+    # ── Backend connectivity ─────────────────────────────────────
+    print("\n[ Backend ]")
+    try:
+        from longtracer.guard.cache import get_default_backend
+        backend = get_default_backend()
+        if backend is not None:
+            _print_check("Default backend", True, type(backend).__name__)
+        else:
+            _print_check("Default backend", False, "returned None")
+            errors += 1
+    except Exception as exc:
+        _print_check("Default backend", False, str(exc)[:80])
+        errors += 1
+
+    # ── Summary ──────────────────────────────────────────────────
+    print()
+    print("=" * 62)
+    if errors == 0 and warnings == 0:
+        print("  \u2713  All checks passed. LongTracer is healthy.")
+    elif errors == 0:
+        print(f"  \u26a0  {warnings} warning(s) \u2014 installation is functional.")
+        if not sts_ok or not nli_ok:
+            print("     Tip: run `longtracer models prepare` to cache model weights")
+            print("     and eliminate the cold-start download on first verification.")
+    else:
+        print(f"  \u2717  {errors} error(s), {warnings} warning(s).")
+        print("     Fix errors above before running verification.")
+    print("=" * 62)
+    print()
+
+    if errors > 0:
+        sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# models prepare  (Roadmap Queue 6 — longtracer models prepare)
+# ---------------------------------------------------------------------------
+
+def cmd_models_prepare(args):
+    """
+    Pre-download STS and NLI model weights to the local HuggingFace cache.
+
+    Safe to re-run — already-cached weights are loaded from disk instantly.
+    Eliminates the cold-start model download that occurs on the first
+    ``longtracer check`` or ``CitationVerifier()`` call.
+
+    Disk usage:
+      STS (all-MiniLM-L6-v2)        ~90 MB
+      NLI (nli-deberta-v3-xsmall)   ~90 MB
+    """
+    import time
+
+    print()
+    print("=" * 62)
+    print("  longtracer models prepare")
+    print("=" * 62)
+    print()
+    print("Downloading model weights (first run may take a few minutes).")
+    print("Weights are cached in ~/.cache/huggingface/hub and")
+    print("reused automatically on every subsequent call.")
+    print()
+
+    try:
+        from sentence_transformers import SentenceTransformer, CrossEncoder
+    except ImportError:
+        print("  \u2717  sentence-transformers is not installed.")
+        print("     Install with: pip install longtracer")
+        sys.exit(1)
+
+    errors = []
+
+    # 1. STS bi-encoder
+    sts_name = "sentence-transformers/all-MiniLM-L6-v2"
+    print(f"[ 1/2 ]  Loading STS bi-encoder")
+    print(f"         {sts_name}")
+    t0 = time.time()
+    try:
+        SentenceTransformer(sts_name)
+        elapsed = (time.time() - t0) * 1000
+        print(f"         \u2713  Ready  ({elapsed:.0f} ms)")
+    except Exception as exc:
+        print(f"         \u2717  FAILED: {exc}")
+        errors.append(("STS bi-encoder", str(exc)))
+    print()
+
+    # 2. NLI cross-encoder
+    nli_name = "cross-encoder/nli-deberta-v3-xsmall"
+    print(f"[ 2/2 ]  Loading NLI cross-encoder")
+    print(f"         {nli_name}")
+    t0 = time.time()
+    try:
+        CrossEncoder(nli_name)
+        elapsed = (time.time() - t0) * 1000
+        print(f"         \u2713  Ready  ({elapsed:.0f} ms)")
+    except Exception as exc:
+        print(f"         \u2717  FAILED: {exc}")
+        errors.append(("NLI cross-encoder", str(exc)))
+    print()
+
+    print("=" * 62)
+    if not errors:
+        print("  \u2713  Both models ready.")
+        print("     The cold-start penalty on your first verification is now")
+        print("     eliminated. Run `longtracer doctor` to verify full health.")
+    else:
+        print(f"  \u2717  {len(errors)} model(s) failed:")
+        for name, msg in errors:
+            print(f"     \u2022 {name}: {msg}")
+        print()
+        print("  Possible causes:")
+        print("    - No internet connection")
+        print("    - Insufficient disk space (~180 MB needed for both models)")
+        print("    - HuggingFace Hub outage  https://status.huggingface.co")
+    print("=" * 62)
+    print()
+
+    if errors:
+        sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# main entry point
+# ---------------------------------------------------------------------------
+
 def main():
     _load_dotenv()
     parser = argparse.ArgumentParser(
         prog="longtracer",
-        description="LongTracer — View and inspect verification traces",
+        description="LongTracer \u2014 RAG grounding verification and trace management",
     )
     sub = parser.add_subparsers(dest="command")
+
+    # ── view ──────────────────────────────────────────────────────
     vp = sub.add_parser("view", help="View traces")
     vp.add_argument("--id", help="View a specific trace by ID")
     vp.add_argument("--last", action="store_true", help="View most recent trace")
@@ -261,35 +556,73 @@ def main():
     vp.add_argument("--html", metavar="TRACE_ID", help="Export trace to HTML report")
     vp.add_argument("--output", "-o", help="Output file path")
     vp.add_argument("--project", "-p", help="Filter by project name")
-    vp.add_argument("--limit", type=int, default=10, help="Max traces to list")
+    vp.add_argument("--limit", type=int, default=10, help="Max traces to list (default: 10)")
 
-    # check subcommand
+    # ── check ─────────────────────────────────────────────────────
     cp = sub.add_parser("check", help="Verify a response against sources")
     cp.add_argument("response", help="LLM response text to verify")
     cp.add_argument("sources", nargs="+", help="Source text(s) to verify against")
     cp.add_argument("--json", dest="json_output", action="store_true",
-                     help="Output results as JSON")
+                    help="Output results as JSON")
     cp.add_argument("--threshold", type=float, default=0.5,
-                     help="Verification threshold (default: 0.5)")
+                    help="Verification threshold (default: 0.5)")
 
-    # serve subcommand
-    sp = sub.add_parser("serve", help="Start the REST API server")
-    sp.add_argument("--host", default="0.0.0.0", help="Bind address (default: 0.0.0.0)")
-    sp.add_argument("--port", type=int, default=8100, help="Port (default: 8100)")
-    sp.add_argument("--workers", type=int, default=1, help="Worker processes (default: 1)")
-    sp.add_argument("--reload", action="store_true", help="Enable auto-reload (dev mode)")
+    # ── serve ─────────────────────────────────────────────────────
+    sp = sub.add_parser("serve", help="Start the REST API and dashboard server")
+    sp.add_argument("--host", default="0.0.0.0",
+                    help="Bind address (default: 0.0.0.0)")
+    sp.add_argument("--port", type=int, default=8000,
+                    help="Port (default: 8000 — dashboard at http://localhost:8000/dashboard)")
+    sp.add_argument("--workers", type=int, default=1,
+                    help="Worker processes (default: 1)")
+    sp.add_argument("--reload", action="store_true",
+                    help="Enable auto-reload (dev mode only)")
+
+    # ── doctor ────────────────────────────────────────────────────
+    sub.add_parser(
+        "doctor",
+        help=(
+            "Inspect installation health: Python version, package version, "
+            "model cache, optional extras, storage writability, and configuration. "
+            "Read-only — never mutates traces or data."
+        ),
+    )
+
+    # ── models ────────────────────────────────────────────────────
+    mp = sub.add_parser("models", help="Manage model weights")
+    msub = mp.add_subparsers(dest="models_command")
+    msub.add_parser(
+        "prepare",
+        help=(
+            "Pre-download STS and NLI model weights (~180 MB total) so the "
+            "first `longtracer check` starts instantly without a cold-start download."
+        ),
+    )
 
     args = parser.parse_args()
+
+    # Default to `view` when called with no subcommand
     if args.command is None:
         args.command = "view"
-        args.id = args.last = args.export = args.html = args.output = args.project = None
-        args.limit = 10
+        args.id = None
         args.last = False
+        args.export = None
+        args.html = None
+        args.output = None
+        args.project = None
+        args.limit = 10
 
     if args.command == "check":
         cmd_check(args)
     elif args.command == "serve":
         cmd_serve(args)
+    elif args.command == "doctor":
+        cmd_doctor(args)
+    elif args.command == "models":
+        if getattr(args, "models_command", None) == "prepare":
+            cmd_models_prepare(args)
+        else:
+            mp.print_help()
     elif args.command == "view":
         if args.id:
             cmd_view(args)
