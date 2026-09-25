@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Removed accidental dashboard screenshot TODO comment from public README
+  (the note `> *Note: Please save a screenshot of http://localhost:8100/dashboard...`
+  was an internal reminder that was not meant to appear in the published README).
+- Canonicalized dashboard port to `8000` throughout documentation; the `8100`
+  reference in the screenshot note was incorrect — `longtracer serve` binds to
+  `http://localhost:8000/dashboard`.
+- Removed `scratch_test.py` from the repository root; it was a developer debugging
+  script with no test infrastructure integration and should not appear in a public
+  repository root.
+
 ## [0.2.0] - 2026-05-18
 
 ### Added

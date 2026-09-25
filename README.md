@@ -43,7 +43,6 @@ pip install longtracer
 **Web Dashboard — browse metrics and traces locally:**
 
 ![LongTracer Dashboard](assets/dashboard.png)
-> *Note: Please save a screenshot of http://localhost:8100/dashboard to `assets/dashboard.png`*
 
 **Full TUI workflow demo:** `python demos/hallucination_detection.py`
 
