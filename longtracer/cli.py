@@ -269,6 +269,18 @@ def _print_check(label: str, ok: bool, detail: str = "", warn: bool = False) -> 
     return ok and not warn
 
 
+def _is_model_cached(model_id: str) -> bool:
+    """Check if a HuggingFace model is present in the local cache."""
+    hf_home = os.environ.get("HF_HOME", str(Path.home() / ".cache" / "huggingface"))
+    hub = Path(hf_home) / "hub"
+    safe_name = "models--" + model_id.replace("/", "--")
+    model_dir = hub / safe_name
+    return model_dir.exists() and any(
+        f.suffix in (".bin", ".safetensors", ".pt")
+        for f in model_dir.rglob("*")
+    )
+
+
 def cmd_doctor(args):  # noqa: C901
     """
     Inspect the LongTracer installation and report health.
@@ -331,17 +343,6 @@ def cmd_doctor(args):  # noqa: C901
 
     # ── Model cache ──────────────────────────────────────────────
     print("\n[ Model cache ]")
-
-    def _is_model_cached(model_id: str) -> bool:
-        """Check if a HuggingFace model is present in the local cache."""
-        hf_home = os.environ.get("HF_HOME", str(Path.home() / ".cache" / "huggingface"))
-        hub = Path(hf_home) / "hub"
-        safe_name = "models--" + model_id.replace("/", "--")
-        model_dir = hub / safe_name
-        return model_dir.exists() and any(
-            f.suffix in (".bin", ".safetensors", ".pt")
-            for f in model_dir.rglob("*")
-        )
 
     sts_id = "sentence-transformers/all-MiniLM-L6-v2"
     sts_ok = _is_model_cached(sts_id)
