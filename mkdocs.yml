@@ -70,6 +70,7 @@ nav:
     - LangGraph & Agents: integrations/langgraph.md
     - LlamaIndex: integrations/llamaindex.md
     - Haystack: integrations/haystack.md
+    - EvalPort: integrations/evalport.md
     - Direct API: integrations/direct-api.md
   - Trace Storage:
     - Backends: backends.md
