@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **EvalPort adapter** (`longtracer[evalport]`): `to_openeval(result, ...)` — export any `VerificationResult` (or a batch, e.g. from `CitationVerifier.verify_batch()`) to an [EvalPort](https://github.com/adhabnr-ux/evalport) `ResultSet`, a small open interchange format for portable LLM evaluation results. Response-level fields (`trust_score`, `verdict`, `summary`, `latency_stats`) and claim-level evidence (`supported`, `score`, `best_source`, `is_hallucination`) are direct passthroughs — nothing is recalculated, and unsupported claims stay distinct from confirmed hallucinations. Also available as `longtracer.to_openeval` and `longtracer.adapters.to_openeval`. Has no hard dependency on `evalport-sdk` — the optional extra only sharpens the `version` field reported in the exported `ResultSet`. See `docs/integrations/evalport.md`.
+
 ### Fixed
 - Removed accidental dashboard screenshot TODO comment from public README
   (the note `> *Note: Please save a screenshot of http://localhost:8100/dashboard...`

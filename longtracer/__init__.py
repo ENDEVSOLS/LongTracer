@@ -112,6 +112,32 @@ def instrument_autogen(agent, threshold=0.5, verbose=None):
     return _impl(agent, threshold=threshold, verbose=verbose)
 
 
+def to_openeval(
+    results,
+    *,
+    test_case_ids=None,
+    response_texts=None,
+    run_id=None,
+    suite_id="longtracer_citation_verification",
+    started_at=None,
+):
+    """Lazy-loaded EvalPort adapter.
+
+    Export one (or a batch of) LongTracer ``VerificationResult`` into an
+    EvalPort ``ResultSet`` dict (https://github.com/adhabnr-ux/evalport).
+    See ``longtracer.adapters.evalport.to_openeval`` for full documentation.
+    """
+    from longtracer.adapters.evalport import to_openeval as _impl
+    return _impl(
+        results,
+        test_case_ids=test_case_ids,
+        response_texts=response_texts,
+        run_id=run_id,
+        suite_id=suite_id,
+        started_at=started_at,
+    )
+
+
 # Backward compatibility
 CitationGuard = LongTracer
 
@@ -130,5 +156,6 @@ __all__ = [
     "instrument_openai_assistant",
     "instrument_crewai",
     "instrument_autogen",
+    "to_openeval",
 ]
 
