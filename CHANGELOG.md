@@ -27,11 +27,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `longtracer check` call. Safe to re-run; cached weights are reused instantly.
   Reports per-model load time and exits 1 on download failure.
 
-### Fixed
+### Changed
 - `longtracer serve` default port corrected from `8100` to `8000` to match
   the documented dashboard URL (`http://localhost:8000/dashboard`).
   Users who previously relied on the undocumented `8100` default should pass
   `--port 8100` explicitly.
+
+### Fixed
+- Removed accidental dashboard screenshot TODO comment from public README
+  (the note `> *Note: Please save a screenshot of http://localhost:8100/dashboard...`
+  was an internal reminder that was not meant to appear in the published README).
+- Canonicalized dashboard port to `8000` throughout documentation; the `8100`
+  reference in the screenshot note was incorrect — `longtracer serve` binds to
+  `http://localhost:8000/dashboard`.
+- Removed `scratch_test.py` from the repository root; it was a developer debugging
+  script with no test infrastructure integration and should not appear in a public
+  repository root.
 
 ## [0.2.0] - 2026-05-18
 
