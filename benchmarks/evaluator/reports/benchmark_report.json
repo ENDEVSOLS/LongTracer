@@ -1,0 +1,524 @@
+{
+  "split": "heldout",
+  "detect_conflicts": true,
+  "total_cases": 98,
+  "assessed_cases": 98,
+  "evaluator_errors": [],
+  "alignment_failures": 0,
+  "gate_agreement": {
+    "positives": 80,
+    "total": 98
+  },
+  "false_alert_rate": {
+    "positives": 1,
+    "total": 28,
+    "indeterminate_on_expected_pass": 0
+  },
+  "contradiction_alert_precision": {
+    "positives": 33,
+    "total": 40
+  },
+  "confusion_matrix": {
+    "SUPPORTED": {
+      "SUPPORTED": 28,
+      "CONTRADICTED": 0,
+      "INSUFFICIENT_EVIDENCE": 0,
+      "CONFLICTING_SOURCES": 0
+    },
+    "CONTRADICTED": {
+      "SUPPORTED": 8,
+      "CONTRADICTED": 33,
+      "INSUFFICIENT_EVIDENCE": 0,
+      "CONFLICTING_SOURCES": 0
+    },
+    "INSUFFICIENT_EVIDENCE": {
+      "SUPPORTED": 4,
+      "CONTRADICTED": 7,
+      "INSUFFICIENT_EVIDENCE": 11,
+      "CONFLICTING_SOURCES": 0
+    },
+    "CONFLICTING_SOURCES": {
+      "SUPPORTED": 5,
+      "CONTRADICTED": 0,
+      "INSUFFICIENT_EVIDENCE": 0,
+      "CONFLICTING_SOURCES": 2
+    }
+  },
+  "per_label": {
+    "SUPPORTED": {
+      "tp": 28,
+      "predicted": 45,
+      "support": 28
+    },
+    "CONTRADICTED": {
+      "tp": 33,
+      "predicted": 40,
+      "support": 41
+    },
+    "INSUFFICIENT_EVIDENCE": {
+      "tp": 11,
+      "predicted": 11,
+      "support": 22
+    },
+    "CONFLICTING_SOURCES": {
+      "tp": 2,
+      "predicted": 2,
+      "support": 7
+    }
+  },
+  "category_results": {
+    "support": {
+      "total": 7,
+      "gate_agree": 7
+    },
+    "contradiction": {
+      "total": 7,
+      "gate_agree": 7
+    },
+    "insufficient_evidence": {
+      "total": 7,
+      "gate_agree": 5
+    },
+    "conflicting_sources": {
+      "total": 7,
+      "gate_agree": 2
+    },
+    "numeric_change": {
+      "total": 7,
+      "gate_agree": 7
+    },
+    "unit_change": {
+      "total": 7,
+      "gate_agree": 2
+    },
+    "date_change": {
+      "total": 7,
+      "gate_agree": 7
+    },
+    "negation": {
+      "total": 7,
+      "gate_agree": 5
+    },
+    "mixed_supported_unsupported": {
+      "total": 7,
+      "gate_agree": 5
+    },
+    "multi_passage_support": {
+      "total": 7,
+      "gate_agree": 7
+    },
+    "table_derived_text": {
+      "total": 7,
+      "gate_agree": 7
+    },
+    "empty_answers": {
+      "total": 7,
+      "gate_agree": 7
+    },
+    "refusals": {
+      "total": 7,
+      "gate_agree": 6
+    },
+    "citation_mistakes": {
+      "total": 7,
+      "gate_agree": 6
+    }
+  },
+  "disagreements": [
+    {
+      "case_id": "case_insufficient_evidence_004",
+      "category": "insufficient_evidence",
+      "response": "The ancient kingdom possessed advanced quantum computing devices in 500 BC.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "FAIL",
+      "expected_claims": [
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "CONTRADICTED"
+      ]
+    },
+    {
+      "case_id": "case_insufficient_evidence_005",
+      "category": "insufficient_evidence",
+      "response": "Certain species of deep sea cephalopods communicate exclusively through psychic telepathy.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_insufficient_evidence_008",
+      "category": "insufficient_evidence",
+      "response": "Domestic feline sleep cycles are directly influenced by Jupiter's gravitational field.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "FAIL",
+      "expected_claims": [
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "CONTRADICTED"
+      ]
+    },
+    {
+      "case_id": "case_insufficient_evidence_009",
+      "category": "insufficient_evidence",
+      "response": "The original blueprint was drafted using green ink imported from Belgium.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_conflicting_sources_002",
+      "category": "conflicting_sources",
+      "response": "The company reported ten million dollars in annual operating profit.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONFLICTING_SOURCES"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_conflicting_sources_004",
+      "category": "conflicting_sources",
+      "response": "The newly opened transit bridge was designed by Chief Engineer Martinez.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONFLICTING_SOURCES"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_conflicting_sources_005",
+      "category": "conflicting_sources",
+      "response": "Clinical trial results showed the drug reduced symptom duration by four days.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONFLICTING_SOURCES"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_conflicting_sources_006",
+      "category": "conflicting_sources",
+      "response": "The ancient manuscript contains exactly forty-two illustrated botanical plates.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONFLICTING_SOURCES"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_conflicting_sources_010",
+      "category": "conflicting_sources",
+      "response": "The solar array provides eighty percent of the facility's electric power.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONFLICTING_SOURCES"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_unit_change_002",
+      "category": "unit_change",
+      "response": "The dry cargo container weighs approximately two thousand pounds when empty.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONTRADICTED"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_unit_change_004",
+      "category": "unit_change",
+      "response": "The chemical storage tank holds twenty thousand gallons of industrial solvent.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONTRADICTED"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_unit_change_005",
+      "category": "unit_change",
+      "response": "The microchip fabrication gate length measures five micrometers in thickness.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONTRADICTED"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_unit_change_008",
+      "category": "unit_change",
+      "response": "The fiber optic connection transmits data at twenty gigabits per day.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONTRADICTED"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_unit_change_010",
+      "category": "unit_change",
+      "response": "The subterranean pressure valve operates at forty Pascals of hydraulic pressure.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONTRADICTED"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_negation_009",
+      "category": "negation",
+      "response": "The water filtration system does not eliminate heavy metal contaminants.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONTRADICTED"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_negation_010",
+      "category": "negation",
+      "response": "The mobile device battery is removable by end users.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONTRADICTED"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_004",
+      "category": "mixed_supported_unsupported",
+      "response": "Mount Everest is Earth's highest mountain. Space aliens built a radio telescope on its summit.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "FAIL",
+      "expected_claims": [
+        "SUPPORTED",
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "SUPPORTED",
+        "CONTRADICTED"
+      ]
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_005",
+      "category": "mixed_supported_unsupported",
+      "response": "Mercury is the planet closest to the Sun. Mercury is completely covered in liquid chocolate.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "FAIL",
+      "expected_claims": [
+        "SUPPORTED",
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "SUPPORTED",
+        "CONTRADICTED"
+      ]
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_006",
+      "category": "mixed_supported_unsupported",
+      "response": "The Pacific Ocean is the largest ocean. Deep sea mermaids manage fish trade routes there.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "SUPPORTED",
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "SUPPORTED",
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_008",
+      "category": "mixed_supported_unsupported",
+      "response": "DNA carries genetic instructions. DNA was first synthesized by medieval alchemists in Venice.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "SUPPORTED",
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "SUPPORTED",
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_010",
+      "category": "mixed_supported_unsupported",
+      "response": "Photosynthesis produces glucose and oxygen. Plants communicate by sending text messages.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "FAIL",
+      "expected_claims": [
+        "SUPPORTED",
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "SUPPORTED",
+        "CONTRADICTED"
+      ]
+    },
+    {
+      "case_id": "case_refusals_009",
+      "category": "refusals",
+      "response": "The provided context does not provide any answers for the query submitted.",
+      "expected_gate": "PASS",
+      "predicted_gate": "FAIL",
+      "expected_claims": [
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "INSUFFICIENT_EVIDENCE"
+      ]
+    },
+    {
+      "case_id": "case_citation_mistakes_005",
+      "category": "citation_mistakes",
+      "response": "According to Table Three, the product warranty period is five full years.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "FAIL",
+      "expected_claims": [
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "CONTRADICTED"
+      ]
+    },
+    {
+      "case_id": "case_citation_mistakes_009",
+      "category": "citation_mistakes",
+      "response": "According to the weather bulletin, snowfall will commence at midnight.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "PASS",
+      "expected_claims": [
+        "CONTRADICTED"
+      ],
+      "predicted_claims": [
+        "SUPPORTED"
+      ]
+    },
+    {
+      "case_id": "case_citation_mistakes_010",
+      "category": "citation_mistakes",
+      "response": "Source Document Gamma proves that the team completed twenty sprints in total.",
+      "expected_gate": "FAIL",
+      "predicted_gate": "FAIL",
+      "expected_claims": [
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "predicted_claims": [
+        "CONTRADICTED"
+      ]
+    }
+  ],
+  "latency_ms": {
+    "n": 98,
+    "p50": 62.725884999963455,
+    "p95": 170.43795499921544
+  },
+  "environment": {
+    "commit": "ca4e5f0",
+    "python": "3.12.14",
+    "os": "Linux 7.0.0-34-generic",
+    "cpu": "AMD Ryzen 5 PRO 5650U with Radeon Graphics",
+    "logical_cpus": 12,
+    "device": "cpu",
+    "torch": "2.14.1+cpu",
+    "sentence_transformers": "6.1.0",
+    "transformers": "5.18.0",
+    "models": {
+      "sts": {
+        "id": "sentence-transformers/all-MiniLM-L6-v2",
+        "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+      },
+      "nli": {
+        "id": "cross-encoder/nli-deberta-v3-xsmall",
+        "revision": "a150876415327c80daeff35ca6f68f5ed8cf5c24"
+      }
+    },
+    "hf_hub_offline": "1"
+  },
+  "dataset": {
+    "categories": 14,
+    "total_cases": 140,
+    "calibration_cases": 42,
+    "heldout_cases": 98,
+    "review_status": {
+      "unreviewed": 140
+    },
+    "human_reviewed_cases": 0,
+    "language": "en",
+    "content": "Synthetic, general-knowledge English sentences. No customer data, no secrets.",
+    "models_evaluated": {
+      "sts": "sentence-transformers/all-MiniLM-L6-v2",
+      "sts_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "nli": "cross-encoder/nli-deberta-v3-xsmall",
+      "nli_revision": "a150876415327c80daeff35ca6f68f5ed8cf5c24"
+    },
+    "thresholds": {
+      "support_threshold": 0.4,
+      "nli_gate_avg_similarity": 0.25,
+      "contradiction": 0.5,
+      "entailment": 0.5
+    },
+    "preprocessing": {
+      "claim_splitter": "longtracer.guard.claim_splitter.split_into_claims (whitespace-normalised; responses <= 10 chars and sentences <= 15 chars dropped)",
+      "source_sentences": "HybridVerificationModel.split_into_sentences (sentences <= 10 chars dropped)"
+    },
+    "leakage_check": {
+      "method": "Across calibration x held-out pairs: exact match after lower-casing and whitespace normalisation, plus token Jaccard >= 0.8 on the response and on the concatenated source text.",
+      "pairs_flagged": 0
+    },
+    "dataset_version": "0.3.0"
+  }
+}

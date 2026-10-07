@@ -13,6 +13,7 @@ from longtracer.guard.nli_model import HybridVerificationModel, get_shared_model
 
 if TYPE_CHECKING:
     from longtracer.guard.tracer import Tracer
+    from longtracer.contracts.result import CaseResult
 
 
 @dataclass
@@ -455,3 +456,316 @@ class CitationVerifier:
             None, self.verify_batch, items, max_workers
         )
 
+    # ── Typed result path (v0.3.0) ──────────────────────────────────
+    # Additive only: nothing below changes the legacy methods above.
+
+    @staticmethod
+    def _source_ids(sources: List[str], source_metadata: Optional[List[dict]]) -> List[str]:
+        """Stable per-source identifiers (metadata ``source_id``/``id`` if given)."""
+        ids = []
+        for i in range(len(sources)):
+            meta = source_metadata[i] if source_metadata and i < len(source_metadata) else None
+            sid = None
+            if isinstance(meta, dict):
+                sid = meta.get("source_id", meta.get("id"))
+            ids.append(str(sid) if sid is not None else f"source_{i}")
+        return ids
+
+    def _nli_label_indices(self) -> Optional[Dict[str, int]]:
+        """Read entailment/contradiction indices from the NLI model's own config.
+
+        Returns None if the label mapping cannot be determined, so the caller
+        reports detection as unavailable instead of guessing.
+        """
+        cfg = getattr(getattr(self.model.nli_model, "model", None), "config", None)
+        id2label = getattr(cfg, "id2label", None)
+        if not isinstance(id2label, dict):
+            return None
+        by_name = {str(v).lower(): int(k) for k, v in id2label.items()}
+        if "entailment" not in by_name or "contradiction" not in by_name:
+            return None
+        return {"entailment": by_name["entailment"], "contradiction": by_name["contradiction"]}
+
+    def _detect_and_apply_conflicts(
+        self,
+        case_res: "CaseResult",
+        sources: List[str],
+        source_metadata: Optional[List[dict]] = None,
+        max_sources: int = 3,
+    ) -> str:
+        """Opt-in: mark claims where one source entails and another contradicts.
+
+        For each assessed claim, the best-matching sentence from each distinct
+        source (STS similarity >= 0.25, the existing NLI gate) is scored with
+        NLI, for up to ``max_sources`` sources. Uses the model's own label
+        mapping. Returns a status string recorded in ``case_res.metadata``.
+        Errors propagate as EvaluationFailedError (never silently skipped).
+        """
+        import numpy as np
+        from sentence_transformers import util
+
+        from longtracer.contracts.result import AssessmentAvailability, ClaimAssessment, ReasonCode
+        from longtracer.errors import EvaluationFailedError
+
+        labels = self._nli_label_indices()
+        if labels is None:
+            return "unavailable: NLI label mapping not found"
+
+        ids = self._source_ids(sources, source_metadata)
+        per_source = [(sid, self.model.extract_source_sentences(src)) for sid, src in zip(ids, sources)]
+        per_source = [(sid, sents) for sid, sents in per_source if sents]
+        if len(per_source) < 2:
+            return "skipped: fewer than two sources with usable text"
+
+        targets = [c for c in case_res.claims if c.availability == AssessmentAvailability.ASSESSED]
+        if not targets:
+            return "skipped: no assessed claims"
+
+        try:
+            claim_embs = self.model.sts_model.encode(
+                [c.claim_text for c in targets], convert_to_tensor=True, show_progress_bar=False
+            )
+            src_embs = [
+                self.model.sts_model.encode(sents, convert_to_tensor=True, show_progress_bar=False)
+                for _, sents in per_source
+            ]
+            pairs: List[tuple] = []  # (claim_idx, source_id, premise, claim_text)
+            for ci, claim in enumerate(targets):
+                cands = []
+                for (sid, sents), embs in zip(per_source, src_embs):
+                    sims = util.cos_sim(claim_embs[ci : ci + 1], embs)[0]
+                    j = int(sims.argmax())
+                    if float(sims[j]) >= 0.25:
+                        cands.append((float(sims[j]), sid, sents[j]))
+                cands.sort(key=lambda x: x[0], reverse=True)
+                if len(cands) >= 2:
+                    pairs.extend((ci, sid, sent, claim.claim_text) for _, sid, sent in cands[:max_sources])
+            if not pairs:
+                return "enabled: no claim matched two or more sources"
+            logits = np.asarray(self.model.nli_model.predict([(p[2], p[3]) for p in pairs]))
+        except Exception as e:
+            raise EvaluationFailedError(f"Conflict detection failed. (Original error: {e})") from e
+
+        if logits.ndim == 1:
+            logits = logits.reshape(1, -1)
+        probs = np.exp(logits - logits.max(axis=1, keepdims=True))
+        probs = probs / probs.sum(axis=1, keepdims=True)
+
+        verdicts: Dict[int, Dict[str, List[str]]] = {}
+        for (ci, sid, _, _), p in zip(pairs, probs):
+            v = verdicts.setdefault(ci, {"entail": [], "contra": []})
+            if p[labels["entailment"]] > 0.5:
+                v["entail"].append(sid)
+            elif p[labels["contradiction"]] > 0.5:
+                v["contra"].append(sid)
+
+        flagged = 0
+        for ci, v in verdicts.items():
+            if v["entail"] and v["contra"]:
+                claim = targets[ci]
+                claim.assessment = ClaimAssessment.CONFLICTING_SOURCES
+                claim.reason = ReasonCode.CONFLICTING_EVIDENCE
+                claim.supporting_sources = v["entail"]
+                claim.contradicting_sources = v["contra"]
+                flagged += 1
+        return f"enabled: {flagged} conflicting claim(s)"
+
+    def _run_legacy_engine(
+        self,
+        response: str,
+        sources: List[str],
+        source_metadata: Optional[List[dict]],
+        timeout: Optional[float],
+    ) -> VerificationResult:
+        """Run verify_parallel, optionally bounded by a timeout.
+
+        On timeout raises EvaluationTimeoutError and returns immediately. The
+        worker thread cannot be killed; it finishes in the background and its
+        result is discarded.
+        """
+        if timeout is None:
+            return self.verify_parallel(response, sources, source_metadata)
+
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+
+        from longtracer.errors import EvaluationTimeoutError
+
+        executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="longtracer-verify-case")
+        try:
+            future = executor.submit(self.verify_parallel, response, sources, source_metadata)
+            try:
+                return future.result(timeout=timeout)
+            except FuturesTimeoutError as e:
+                future.cancel()
+                raise EvaluationTimeoutError(
+                    f"Evaluation did not finish within {timeout} s.", timeout_s=timeout
+                ) from e
+        finally:
+            executor.shutdown(wait=False)
+
+    @staticmethod
+    def _attach_offsets(case_res: "CaseResult", response: str) -> None:
+        """Fill char_start/char_end where the claim text appears verbatim in the response."""
+        cursor = 0
+        for claim in case_res.claims:
+            pos = response.find(claim.claim_text, cursor)
+            if pos >= 0:
+                claim.char_start = pos
+                claim.char_end = pos + len(claim.claim_text)
+                cursor = claim.char_end
+
+    def verify_case(
+        self,
+        response: str,
+        sources: List[str],
+        source_metadata: Optional[List[dict]] = None,
+        *,
+        case_id: Optional[str] = None,
+        timeout: Optional[float] = None,
+        detect_conflicts: bool = False,
+    ) -> "CaseResult":
+        """Verify a response and return an honest, typed ``CaseResult``.
+
+        Additive companion to ``verify_parallel``: it runs the same engine, so
+        legacy behaviour is unchanged, and reports the outcome in four layers
+        (execution, availability, per-claim assessment with reason codes, and a
+        separately computed quality gate). Failures become typed states and are
+        never reported as a pass.
+
+        Args:
+            response: LLM response text to verify.
+            sources: Source texts to verify against.
+            source_metadata: Optional metadata per source (``source_id``/``id``
+                keys are used as source identifiers).
+            case_id: Optional identifier copied onto the result.
+            timeout: Optional wall-clock limit in seconds (> 0). On expiry the
+                result is ``TIMEOUT``/``INDETERMINATE``; the background work is
+                not killed.
+            detect_conflicts: Opt-in multi-source NLI check that can emit
+                ``CONFLICTING_SOURCES``. Off by default; experimental. Adds
+                roughly 55% to warm p95 latency when enabled.
+
+        Returns:
+            A ``CaseResult`` with ``schema_version`` set.
+
+        Raises:
+            InvalidInputError: If ``timeout`` is not a positive number.
+        """
+        import time
+        from concurrent.futures import CancelledError as FuturesCancelledError
+
+        from longtracer.contracts.result import (
+            ExecutionStatus,
+            LegacyVerificationAdapter,
+            ReasonCode,
+            compute_quality_gate,
+            unassessed_case,
+        )
+        from longtracer.errors import (
+            EvaluationTimeoutError,
+            EvaluatorError,
+            InvalidInputError,
+            ModelUnavailableError,
+        )
+
+        if timeout is not None and (
+            isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0
+        ):
+            raise InvalidInputError(f"`timeout` must be a positive number of seconds, got {timeout!r}")
+
+        start = time.perf_counter()
+
+        def _elapsed() -> float:
+            return (time.perf_counter() - start) * 1000.0
+
+        def _unassessed(
+            execution: ExecutionStatus, reason: ReasonCode, message: Optional[str] = None
+        ) -> "CaseResult":
+            return unassessed_case(
+                execution, reason, case_id=case_id, error_message=message, latency_ms=_elapsed()
+            )
+
+        # ① Malformed / unsupported input → typed ERROR (legacy methods still raise TypeError)
+        try:
+            self._validate_inputs(response, sources, source_metadata)
+        except TypeError as e:
+            return _unassessed(ExecutionStatus.ERROR, ReasonCode.INVALID_INPUT, str(e))
+
+        # ②③④ Reasons the legacy result cannot carry
+        if not response.strip():
+            case_reason = ReasonCode.EMPTY_RESPONSE
+        elif not split_into_claims(response):
+            case_reason = ReasonCode.NO_EXTRACTABLE_CLAIMS
+        elif not sources:
+            case_reason = ReasonCode.NO_SOURCES_SUPPLIED
+        else:
+            case_reason = None
+
+        # ⑤ Run the unchanged legacy engine
+        try:
+            legacy_res = self._run_legacy_engine(response, sources, source_metadata, timeout)
+        except EvaluationTimeoutError as e:
+            return _unassessed(ExecutionStatus.TIMEOUT, ReasonCode.EVALUATION_TIMEOUT, str(e))
+        except FuturesCancelledError:
+            return _unassessed(ExecutionStatus.CANCELLED, ReasonCode.EXECUTION_CANCELLED, "Evaluation cancelled.")
+        except ModelUnavailableError as e:
+            return _unassessed(ExecutionStatus.ERROR, ReasonCode.MODEL_UNAVAILABLE, str(e))
+        except EvaluatorError as e:
+            return _unassessed(ExecutionStatus.ERROR, ReasonCode.EVALUATION_FAILED, str(e))
+        except Exception as e:  # unknown engine failure: still never a success
+            return _unassessed(ExecutionStatus.ERROR, ReasonCode.EVALUATION_FAILED, f"{type(e).__name__}: {e}")
+
+        # ⑥ Measurement layer: map claims from raw signals (adapter, thresholds unchanged)
+        case_res = LegacyVerificationAdapter.from_legacy(legacy_res, case_id=case_id, case_reason=case_reason)
+        self._attach_offsets(case_res, response)
+        case_res.metadata["legacy_verdict"] = legacy_res.verdict
+
+        # ⑦ Optional conflict detection
+        if detect_conflicts:
+            try:
+                case_res.metadata["conflict_detection"] = self._detect_and_apply_conflicts(
+                    case_res, sources, source_metadata
+                )
+            except EvaluatorError as e:
+                return _unassessed(ExecutionStatus.ERROR, ReasonCode.EVALUATION_FAILED, str(e))
+        else:
+            case_res.metadata["conflict_detection"] = "disabled"
+
+        # ⑧ Policy layer, computed separately from measurement
+        from longtracer.contracts.result import summarize_case
+
+        case_res.summary = summarize_case(case_res.claims, case_res.reason)
+        case_res.quality_gate = compute_quality_gate(case_res)
+        case_res.latency_ms = _elapsed()
+        return case_res
+
+    async def verify_case_async(
+        self,
+        response: str,
+        sources: List[str],
+        source_metadata: Optional[List[dict]] = None,
+        *,
+        case_id: Optional[str] = None,
+        timeout: Optional[float] = None,
+        detect_conflicts: bool = False,
+    ) -> "CaseResult":
+        """Async wrapper for ``verify_case``.
+
+        Runs in a thread pool executor so the event loop is not blocked. The
+        timeout is enforced inside ``verify_case``. If the awaiting task itself
+        is cancelled, ``asyncio.CancelledError`` propagates (asyncio contract);
+        there is no caller left to receive a ``CANCELLED`` result.
+        """
+        loop = asyncio.get_running_loop()
+
+        def _run() -> "CaseResult":
+            return self.verify_case(
+                response,
+                sources,
+                source_metadata,
+                case_id=case_id,
+                timeout=timeout,
+                detect_conflicts=detect_conflicts,
+            )
+
+        return await loop.run_in_executor(None, _run)

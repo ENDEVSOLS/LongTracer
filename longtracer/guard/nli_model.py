@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from sentence_transformers import SentenceTransformer, CrossEncoder, util
 from longtracer.guard.claim_splitter import analyze_claim
+from longtracer.errors import EvaluationFailedError, ModelUnavailableError, PREPARE_HINT
 
 logger = logging.getLogger("longtracer")
 
@@ -51,10 +52,11 @@ class HybridVerificationModel:
         try:
             self.sts_model = SentenceTransformer(sts_model_name)
         except Exception as e:
-            raise ImportError(
+            raise ModelUnavailableError(
                 f"Failed to load STS model '{sts_model_name}'. "
-                f"Install with: pip install sentence-transformers>=5.0 "
-                f"(Original error: {e})"
+                f"Install with: pip install sentence-transformers>=5.0. "
+                f"{PREPARE_HINT} (Original error: {e})",
+                model_name=sts_model_name,
             ) from e
         if verbose:
             print(f"     ✓ Fast STS loaded in {(time.time()-start)*1000:.0f}ms")
@@ -65,10 +67,11 @@ class HybridVerificationModel:
         try:
             self.nli_model = CrossEncoder(nli_model_name)
         except Exception as e:
-            raise ImportError(
+            raise ModelUnavailableError(
                 f"Failed to load NLI model '{nli_model_name}'. "
-                f"Install with: pip install sentence-transformers>=5.0 "
-                f"(Original error: {e})"
+                f"Install with: pip install sentence-transformers>=5.0. "
+                f"{PREPARE_HINT} (Original error: {e})",
+                model_name=nli_model_name,
             ) from e
         if verbose:
             print(f"     ✓ NLI loaded in {(time.time()-start)*1000:.0f}ms")
@@ -108,7 +111,13 @@ class HybridVerificationModel:
     def compute_nli_scores(self, source: str, claim: str) -> Dict[str, float]:
         """Compute NLI probabilities."""
         start = time.time()
-        scores = self.nli_model.predict([(source, claim)])
+        try:
+            scores = self.nli_model.predict([(source, claim)])
+        except Exception as e:
+            raise EvaluationFailedError(
+                f"NLI inference failed while scoring a claim against evidence. "
+                f"(Original error: {e})"
+            ) from e
         latency_ms = (time.time() - start) * 1000
 
         self.latency_log["nli_calls"] += 1
@@ -155,8 +164,13 @@ class HybridVerificationModel:
             return self._empty_result(claim, claim_analysis)
 
         sts_start = time.time()
-        claim_embs = self.sts_model.encode(claim_sentences, convert_to_tensor=True, show_progress_bar=False)
-        source_embs = self.sts_model.encode(all_source_sentences, convert_to_tensor=True, show_progress_bar=False)
+        try:
+            claim_embs = self.sts_model.encode(claim_sentences, convert_to_tensor=True, show_progress_bar=False)
+            source_embs = self.sts_model.encode(all_source_sentences, convert_to_tensor=True, show_progress_bar=False)
+        except Exception as e:
+            raise EvaluationFailedError(
+                f"STS encoding failed while scoring a claim against evidence. (Original error: {e})"
+            ) from e
         sim_matrix = util.cos_sim(claim_embs, source_embs)
         sts_latency = (time.time() - sts_start) * 1000
         self.latency_log["sts_calls"] += 1
@@ -288,14 +302,19 @@ class HybridVerificationModel:
                 claim_sentence_map.append((claim_idx, sent_idx, sent))
 
         sts_start = time.time()
-        claim_embs = self.sts_model.encode(
-            all_claim_sentences, convert_to_tensor=True,
-            show_progress_bar=False, batch_size=64
-        )
-        source_embs = self.sts_model.encode(
-            all_source_sentences, convert_to_tensor=True,
-            show_progress_bar=False, batch_size=64
-        )
+        try:
+            claim_embs = self.sts_model.encode(
+                all_claim_sentences, convert_to_tensor=True,
+                show_progress_bar=False, batch_size=64
+            )
+            source_embs = self.sts_model.encode(
+                all_source_sentences, convert_to_tensor=True,
+                show_progress_bar=False, batch_size=64
+            )
+        except Exception as e:
+            raise EvaluationFailedError(
+                f"STS encoding failed while scoring claims against evidence. (Original error: {e})"
+            ) from e
         full_sim_matrix = util.cos_sim(claim_embs, source_embs)
         sts_latency = (time.time() - sts_start) * 1000
         self.latency_log["sts_calls"] += 1

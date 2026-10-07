@@ -20,6 +20,14 @@ import importlib
 from unittest.mock import MagicMock, patch
 import pytest
 
+# Offline mock fallback for heavy ML dependencies
+for _mod in ("sentence_transformers", "transformers"):
+    if _mod not in sys.modules:
+        try:
+            __import__(_mod)
+        except ImportError:
+            sys.modules[_mod] = MagicMock()
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -171,6 +179,7 @@ class TestDoctorExitCodes:
         with patch("longtracer.cli._is_model_cached", return_value=True), \
              patch("longtracer.guard.cache.get_default_backend",
                    return_value=MagicMock()), \
+             patch("importlib.metadata.version", return_value="0.2.0"), \
              patch("importlib.import_module", side_effect=lambda m: types.ModuleType(m)):
             args = argparse.Namespace()
             # If doctor finds no errors it should NOT raise SystemExit(1)

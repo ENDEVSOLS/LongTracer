@@ -13,6 +13,13 @@ Usage:
     from longtracer import instrument_langchain, instrument_llamaindex
 """
 
+try:
+    import importlib.metadata as _metadata
+
+    __version__ = _metadata.version("longtracer")
+except Exception:  # not installed (e.g. running from a source checkout)
+    __version__ = "0.0.0+unknown"
+
 from longtracer.core import LongTracer
 from longtracer.guard.verifier import CitationVerifier, VerificationResult
 
@@ -112,16 +119,86 @@ def instrument_autogen(agent, threshold=0.5, verbose=None):
     return _impl(agent, threshold=threshold, verbose=verbose)
 
 
+def check_case(
+    response: str,
+    sources: list[str],
+    source_metadata: list[dict] | None = None,
+    *,
+    case_id: str | None = None,
+    timeout: float | None = None,
+    detect_conflicts: bool = False,
+    **kw,
+):
+    """One-liner typed verification — returns a ``CaseResult``, never raises for evaluator failures.
+
+    Unlike ``check()``, model loading happens inside this call, so a missing or
+    undownloadable model (``ModelUnavailableError``) is reported as
+    ``execution=ERROR`` / ``quality_gate=INDETERMINATE`` / ``reason=MODEL_UNAVAILABLE``.
+
+    Args:
+        response: LLM response text to verify.
+        sources: Source texts to verify against.
+        source_metadata: Optional metadata per source.
+        case_id: Optional identifier copied onto the result.
+        timeout: Optional wall-clock limit in seconds.
+        detect_conflicts: Opt-in ``CONFLICTING_SOURCES`` detection.
+        **kw: Passed to ``CitationVerifier(...)`` (e.g. ``cache=True``).
+
+    Returns:
+        CaseResult with execution, availability, claim assessments and quality gate.
+    """
+    from longtracer.contracts.result import ExecutionStatus, ReasonCode, unassessed_case
+    from longtracer.errors import ModelUnavailableError
+
+    try:
+        verifier = CitationVerifier(**kw)
+    except ModelUnavailableError as e:
+        return unassessed_case(ExecutionStatus.ERROR, ReasonCode.MODEL_UNAVAILABLE, case_id=case_id, error_message=str(e))
+    except Exception as e:  # any other construction failure is still never a success
+        return unassessed_case(
+            ExecutionStatus.ERROR, ReasonCode.EVALUATION_FAILED, case_id=case_id, error_message=f"{type(e).__name__}: {e}"
+        )
+
+    return verifier.verify_case(
+        response,
+        sources,
+        source_metadata=source_metadata,
+        case_id=case_id,
+        timeout=timeout,
+        detect_conflicts=detect_conflicts,
+    )
+
+
+# Typed evaluation contracts
+from longtracer.contracts.result import (
+    CaseResult,
+    ClaimResult,
+    ExecutionStatus,
+    AssessmentAvailability,
+    ClaimAssessment,
+    QualityGate,
+    ReasonCode,
+)
+
 # Backward compatibility
 CitationGuard = LongTracer
 
 __all__ = [
+    "__version__",
     "LongTracer",
     "CitationGuard",  # backward compat
     "CitationVerifier",
     "VerificationResult",
     "check",
     "check_batch",
+    "check_case",
+    "CaseResult",
+    "ClaimResult",
+    "ExecutionStatus",
+    "AssessmentAvailability",
+    "ClaimAssessment",
+    "QualityGate",
+    "ReasonCode",
     "instrument_langchain",
     "instrument_langchain_agent",
     "instrument_langgraph",

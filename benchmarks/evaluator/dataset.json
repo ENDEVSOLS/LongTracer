@@ -1,0 +1,4507 @@
+{
+  "dataset_version": "0.3.0",
+  "metadata": {
+    "categories": 14,
+    "total_cases": 140,
+    "calibration_cases": 42,
+    "heldout_cases": 98,
+    "review_status": {
+      "unreviewed": 140
+    },
+    "human_reviewed_cases": 0,
+    "language": "en",
+    "content": "Synthetic, general-knowledge English sentences. No customer data, no secrets.",
+    "models_evaluated": {
+      "sts": "sentence-transformers/all-MiniLM-L6-v2",
+      "sts_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "nli": "cross-encoder/nli-deberta-v3-xsmall",
+      "nli_revision": "a150876415327c80daeff35ca6f68f5ed8cf5c24"
+    },
+    "thresholds": {
+      "support_threshold": 0.4,
+      "nli_gate_avg_similarity": 0.25,
+      "contradiction": 0.5,
+      "entailment": 0.5
+    },
+    "preprocessing": {
+      "claim_splitter": "longtracer.guard.claim_splitter.split_into_claims (whitespace-normalised; responses <= 10 chars and sentences <= 15 chars dropped)",
+      "source_sentences": "HybridVerificationModel.split_into_sentences (sentences <= 10 chars dropped)"
+    },
+    "leakage_check": {
+      "method": "Across calibration x held-out pairs: exact match after lower-casing and whitespace normalisation, plus token Jaccard >= 0.8 on the response and on the concatenated source text.",
+      "pairs_flagged": 0
+    }
+  },
+  "cases": [
+    {
+      "case_id": "case_support_001",
+      "split": "calibration",
+      "category": "support",
+      "response": "The Eiffel Tower is located in Paris and was completed in 1889.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Eiffel Tower is a wrought-iron lattice tower located on the Champ de Mars in Paris, completed in 1889.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The Eiffel Tower is located in Paris and was completed in 1889.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Ground truth historical fact supported directly."
+      }
+    },
+    {
+      "case_id": "case_support_002",
+      "split": "heldout",
+      "category": "support",
+      "response": "Water freezes at 0 degrees Celsius under standard atmospheric pressure.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Under standard atmospheric pressure, the freezing point of pure water is 0 degrees Celsius.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Water freezes at 0 degrees Celsius under standard atmospheric pressure.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Physical science fact directly grounded."
+      }
+    },
+    {
+      "case_id": "case_support_003",
+      "split": "calibration",
+      "category": "support",
+      "response": "Python was designed by Guido van Rossum and released in 1991.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Guido van Rossum began implementing Python in December 1989 and released version 0.9.0 in February 1991.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Python was designed by Guido van Rossum and released in 1991.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Software history fact supported."
+      }
+    },
+    {
+      "case_id": "case_support_004",
+      "split": "heldout",
+      "category": "support",
+      "response": "Mount Everest is the highest mountain above sea level on Earth.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Mount Everest is Earth's highest mountain above sea level, located in the Mahalangur Himal sub-range of the Himalayas.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Mount Everest is the highest mountain above sea level on Earth.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Geographical fact supported."
+      }
+    },
+    {
+      "case_id": "case_support_005",
+      "split": "heldout",
+      "category": "support",
+      "response": "The Pacific Ocean is the largest and deepest of Earth's oceanic divisions.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Pacific Ocean is the largest and deepest of the world ocean basins, covering over 60 million square miles.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The Pacific Ocean is the largest and deepest of Earth's oceanic divisions.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Earth science fact supported."
+      }
+    },
+    {
+      "case_id": "case_support_006",
+      "split": "heldout",
+      "category": "support",
+      "response": "DNA contains the genetic instructions used in the development and functioning of all known living organisms.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Deoxyribonucleic acid is a polymer composed of two polynucleotide chains that coil around each other to carry genetic instructions.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "DNA contains the genetic instructions used in the development and functioning of all known living organisms.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Biology fact supported."
+      }
+    },
+    {
+      "case_id": "case_support_007",
+      "split": "calibration",
+      "category": "support",
+      "response": "The speed of light in a vacuum is approximately 299,792 kilometers per second.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The speed of light in vacuum, commonly denoted c, is universally defined as exactly 299,792,458 metres per second.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The speed of light in a vacuum is approximately 299,792 kilometers per second.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Physics constant grounded."
+      }
+    },
+    {
+      "case_id": "case_support_008",
+      "split": "heldout",
+      "category": "support",
+      "response": "The Amazon River discharges more water than any other river system in the world.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Amazon River by far has the greatest total river discharge in the world, representing roughly a fifth of global river flow.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The Amazon River discharges more water than any other river system in the world.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Geography fact supported."
+      }
+    },
+    {
+      "case_id": "case_support_009",
+      "split": "heldout",
+      "category": "support",
+      "response": "Mercury is the smallest planet in the Solar System and closest to the Sun.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Mercury is the smallest planet in the Solar System and the one closest to the Sun.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Mercury is the smallest planet in the Solar System and closest to the Sun.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Astronomy fact supported."
+      }
+    },
+    {
+      "case_id": "case_support_010",
+      "split": "heldout",
+      "category": "support",
+      "response": "Photosynthesis enables plants to convert sunlight, carbon dioxide, and water into glucose and oxygen.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Through photosynthesis, green plants synthesize glucose from carbon dioxide and water, releasing oxygen as a byproduct.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Photosynthesis enables plants to convert sunlight, carbon dioxide, and water into glucose and oxygen.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Biochemistry fact supported."
+      }
+    },
+    {
+      "case_id": "case_contradiction_001",
+      "split": "calibration",
+      "category": "contradiction",
+      "response": "The Eiffel Tower is located in downtown Berlin, Germany.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Eiffel Tower is a wrought-iron lattice tower located on the Champ de Mars in Paris, France.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The Eiffel Tower is located in downtown Berlin, Germany.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Explicit geographical contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_002",
+      "split": "heldout",
+      "category": "contradiction",
+      "response": "Water boils at 20 degrees Celsius under standard atmospheric pressure.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Under standard atmospheric pressure at sea level, pure water boils at 100 degrees Celsius.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Water boils at 20 degrees Celsius under standard atmospheric pressure.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Physical property contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_003",
+      "split": "calibration",
+      "category": "contradiction",
+      "response": "Guido van Rossum created the Java programming language at Sun Microsystems.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Guido van Rossum created Python. James Gosling created Java at Sun Microsystems.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Guido van Rossum created the Java programming language at Sun Microsystems.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Creator contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_004",
+      "split": "heldout",
+      "category": "contradiction",
+      "response": "Mount Everest is located entirely within the borders of South America.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Mount Everest is situated in the Himalayas on the border between Nepal and China in Asia.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Mount Everest is located entirely within the borders of South America.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Continent contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_005",
+      "split": "heldout",
+      "category": "contradiction",
+      "response": "The Pacific Ocean is the smallest and shallowest of Earth's oceans.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Pacific Ocean is the largest and deepest ocean basin on Earth.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The Pacific Ocean is the smallest and shallowest of Earth's oceans.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Direct opposite property contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_006",
+      "split": "heldout",
+      "category": "contradiction",
+      "response": "Mercury is the planet located furthest from the Sun in the solar system.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Mercury is the innermost planet, orbiting closest to the Sun.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Mercury is the planet located furthest from the Sun in the solar system.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Orbital position contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_007",
+      "split": "calibration",
+      "category": "contradiction",
+      "response": "Humans have three sets of natural lungs located in the thoracic cavity.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Human anatomy features two lungs situated in the chest on either side of the heart.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Humans have three sets of natural lungs located in the thoracic cavity.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Anatomical quantity contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_008",
+      "split": "heldout",
+      "category": "contradiction",
+      "response": "The Apollo 11 mission was an unmanned satellite launch that never carried astronauts.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Apollo 11 was the American spaceflight that first landed humans, Neil Armstrong and Buzz Aldrin, on the Moon.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The Apollo 11 mission was an unmanned satellite launch that never carried astronauts.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Historical mission contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_009",
+      "split": "heldout",
+      "category": "contradiction",
+      "response": "The Sahara Desert is located primarily in North America.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Sahara is a vast desert located on the African continent.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The Sahara Desert is located primarily in North America.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Location contradiction."
+      }
+    },
+    {
+      "case_id": "case_contradiction_010",
+      "split": "heldout",
+      "category": "contradiction",
+      "response": "Sound travels faster in a complete vacuum than through solid steel.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Sound requires a material medium to propagate and cannot travel through a vacuum.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Sound travels faster in a complete vacuum than through solid steel.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Acoustic physics contradiction."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_001",
+      "split": "calibration",
+      "category": "insufficient_evidence",
+      "response": "Gustave Eiffel personally preferred strawberry ice cream over chocolate.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Eiffel Tower was designed by Gustave Eiffel's engineering company in Paris.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Gustave Eiffel personally preferred strawberry ice cream over chocolate.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Unverifiable biographical detail absent from context."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_002",
+      "split": "heldout",
+      "category": "insufficient_evidence",
+      "response": "The secret recipe for the elixir of immortality was discovered in 1842.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Standard drinking water contains trace minerals like calcium and magnesium.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The secret recipe for the elixir of immortality was discovered in 1842.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Completely ungrounded statement with unrelated source."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_003",
+      "split": "calibration",
+      "category": "insufficient_evidence",
+      "response": "The global market capitalization of widgets will exceed ten trillion dollars next year.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Manufacturing widgets requires precision tooling and specialized steel alloys.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The global market capitalization of widgets will exceed ten trillion dollars next year.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Forward-looking financial projection not in text."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_004",
+      "split": "heldout",
+      "category": "insufficient_evidence",
+      "response": "The ancient kingdom possessed advanced quantum computing devices in 500 BC.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Ancient architectural ruins in the valley date back to the fifth century BC.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The ancient kingdom possessed advanced quantum computing devices in 500 BC.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Anachronistic claim absent from archaeological context."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_005",
+      "split": "heldout",
+      "category": "insufficient_evidence",
+      "response": "Certain species of deep sea cephalopods communicate exclusively through psychic telepathy.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Deep sea squids use bioluminescent photophores and chromatophores to display visual patterns.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Certain species of deep sea cephalopods communicate exclusively through psychic telepathy.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Ungrounded pseudoscientific assertion."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_006",
+      "split": "heldout",
+      "category": "insufficient_evidence",
+      "response": "The conference keynote speaker was wearing custom purple suede sneakers on stage.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The technology summit commenced with opening remarks on modern artificial intelligence safety.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The conference keynote speaker was wearing custom purple suede sneakers on stage.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Irrelevant sartorial detail absent from summary."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_007",
+      "split": "calibration",
+      "category": "insufficient_evidence",
+      "response": "The company founder celebrated their thirtieth birthday in Honolulu, Hawaii.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The corporation was founded in 2010 to develop open source observability software.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The company founder celebrated their thirtieth birthday in Honolulu, Hawaii.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Personal biographical detail missing from business text."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_008",
+      "split": "heldout",
+      "category": "insufficient_evidence",
+      "response": "Domestic feline sleep cycles are directly influenced by Jupiter's gravitational field.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Domestic cats typically spend twelve to sixteen hours per day sleeping or resting.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Domestic feline sleep cycles are directly influenced by Jupiter's gravitational field.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Ungrounded astrological claim."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_009",
+      "split": "heldout",
+      "category": "insufficient_evidence",
+      "response": "The original blueprint was drafted using green ink imported from Belgium.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The architectural blueprints were completed in March and submitted for building permits.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The original blueprint was drafted using green ink imported from Belgium.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Unverifiable drafting detail."
+      }
+    },
+    {
+      "case_id": "case_insufficient_evidence_010",
+      "split": "heldout",
+      "category": "insufficient_evidence",
+      "response": "Ancient inhabitants of the island preferred listening to acoustic guitar melodies.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Archaeologists discovered stone pottery and bone fishhooks at the excavation site.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Ancient inhabitants of the island preferred listening to acoustic guitar melodies.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Cultural anachronism unsupported by evidence."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_001",
+      "split": "calibration",
+      "category": "conflicting_sources",
+      "response": "The historic fortress was constructed in the year 1889.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Archival records confirm the fortress was built and dedicated in 1889.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Recent municipal surveys prove the fortress was built in 1925, not 1889.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The historic fortress was constructed in the year 1889.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Document 1 entails while Document 2 explicitly refutes the construction year."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_002",
+      "split": "heldout",
+      "category": "conflicting_sources",
+      "response": "The company reported ten million dollars in annual operating profit.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The press release states the firm earned ten million dollars in net profit this fiscal year.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "The audited regulatory filing clarifies the firm suffered a five million dollar loss, contradicting claims of ten million in profit.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The company reported ten million dollars in annual operating profit.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Source financial disagreement."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_003",
+      "split": "calibration",
+      "category": "conflicting_sources",
+      "response": "The expedition team successfully reached the northern summit on Tuesday.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Base camp logs confirm the mountaineers reached the northern summit on Tuesday morning.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Radio transmissions verify the team had to abort before the summit due to severe blizzard conditions.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The expedition team successfully reached the northern summit on Tuesday.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Mission outcome conflicting sources."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_004",
+      "split": "heldout",
+      "category": "conflicting_sources",
+      "response": "The newly opened transit bridge was designed by Chief Engineer Martinez.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The city municipal gazette names Martinez as the principal design architect of the bridge.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "The state infrastructure commission records document that Engineer Jenkins designed the bridge, not Martinez.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The newly opened transit bridge was designed by Chief Engineer Martinez.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Attribution conflict across independent archives."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_005",
+      "split": "heldout",
+      "category": "conflicting_sources",
+      "response": "Clinical trial results showed the drug reduced symptom duration by four days.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Phase III trial summaries report a significant four-day reduction in illness duration.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "The independent peer review panel concluded the drug showed zero statistical difference in duration.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Clinical trial results showed the drug reduced symptom duration by four days.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Medical study conflicting conclusions."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_006",
+      "split": "heldout",
+      "category": "conflicting_sources",
+      "response": "The ancient manuscript contains exactly forty-two illustrated botanical plates.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The library catalog notes that the manuscript contains forty-two botanical plates.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "The restoration team's physical audit discovered only thirty-eight plates exist in the codex.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The ancient manuscript contains exactly forty-two illustrated botanical plates.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Disputed archival enumeration."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_007",
+      "split": "calibration",
+      "category": "conflicting_sources",
+      "response": "The island population grew by fifteen percent over the last decade.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Census bureau estimates show an approximate fifteen percent increase in resident population.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Demographic research from the local university demonstrated the population was completely flat with zero net growth.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The island population grew by fifteen percent over the last decade.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Demographic study disagreement."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_008",
+      "split": "heldout",
+      "category": "conflicting_sources",
+      "response": "The spacecraft achieved an orbital speed exceeding twenty-eight thousand kilometers per hour.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Telemetry streams showed the vehicle maintained an orbital speed of twenty-eight thousand kilometers per hour.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Subsequent flight analysis confirmed the vehicle failed to reach orbit, maxing out at sixteen thousand kilometers per hour.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The spacecraft achieved an orbital speed exceeding twenty-eight thousand kilometers per hour.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Telemetry vs post-flight investigation conflict."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_009",
+      "split": "heldout",
+      "category": "conflicting_sources",
+      "response": "The treaty was officially ratified in Geneva on October twelfth.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Diplomatic cables state the delegates ratified the treaty in Geneva on October twelfth.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "National legislative records show the ratification occurred in Bern two months later, not in Geneva.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The treaty was officially ratified in Geneva on October twelfth.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Treaty ratification location conflict."
+      }
+    },
+    {
+      "case_id": "case_conflicting_sources_010",
+      "split": "heldout",
+      "category": "conflicting_sources",
+      "response": "The solar array provides eighty percent of the facility's electric power.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The environmental impact statement cites solar power providing eighty percent of baseline energy.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Utility billing statements show municipal grid power accounts for sixty percent, with solar providing under forty percent.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The solar array provides eighty percent of the facility's electric power.",
+            "assessment": "CONFLICTING_SOURCES"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Renewable energy generation claim conflict."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_001",
+      "split": "calibration",
+      "category": "numeric_change",
+      "response": "The software company achieved ninety-five percent customer satisfaction.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "In the latest annual customer survey, seventy-two percent of respondents reported being satisfied.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The software company achieved ninety-five percent customer satisfaction.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Numeric percentage altered from 72% to 95%."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_002",
+      "split": "heldout",
+      "category": "numeric_change",
+      "response": "The project completed forty-eight hours ahead of schedule.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Due to logistics bottlenecks, the construction project was delivered twelve hours behind schedule.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The project completed forty-eight hours ahead of schedule.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Numeric timeframe hallucination."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_003",
+      "split": "calibration",
+      "category": "numeric_change",
+      "response": "The server rack contains fifty-four individual blade computing nodes.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Each standard datacenter cabinet houses forty-two modular blade servers.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The server rack contains fifty-four individual blade computing nodes.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Count altered from 42 to 54."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_004",
+      "split": "heldout",
+      "category": "numeric_change",
+      "response": "The aircraft has a maximum certified passenger capacity of eight hundred people.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The twin-engine commercial airliner is configured to seat up to three hundred and eighty passengers.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The aircraft has a maximum certified passenger capacity of eight hundred people.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Passenger capacity numeric exaggeration."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_005",
+      "split": "heldout",
+      "category": "numeric_change",
+      "response": "The database cluster maintains three hundred replicas across global availability zones.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The primary production database cluster is configured with three read replicas.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The database cluster maintains three hundred replicas across global availability zones.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Replica count inflated by two orders of magnitude."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_006",
+      "split": "heldout",
+      "category": "numeric_change",
+      "response": "The company employs approximately twelve thousand full-time software engineers.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The startup has grown its engineering division to forty-five full-time developers.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The company employs approximately twelve thousand full-time software engineers.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Staff headcount exaggeration."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_007",
+      "split": "calibration",
+      "category": "numeric_change",
+      "response": "The battery pack provides fifteen hours of continuous high-definition video playback.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Testing revealed the integrated lithium battery lasts for six hours of media streaming.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The battery pack provides fifteen hours of continuous high-definition video playback.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Battery runtime numeric modification."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_008",
+      "split": "heldout",
+      "category": "numeric_change",
+      "response": "The mountain pass reaches a peak elevation of six thousand meters above sea level.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The alpine highway summit attains an elevation of two thousand four hundred meters.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The mountain pass reaches a peak elevation of six thousand meters above sea level.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Elevation numeric change."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_009",
+      "split": "heldout",
+      "category": "numeric_change",
+      "response": "The pipeline throughput is rated at five hundred megabytes per second.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Benchmarking established peak streaming throughput of fifty megabytes per second.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The pipeline throughput is rated at five hundred megabytes per second.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Throughput numeric scale error."
+      }
+    },
+    {
+      "case_id": "case_numeric_change_010",
+      "split": "heldout",
+      "category": "numeric_change",
+      "response": "The city subway network spans four hundred operational passenger stations.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The metropolitan transit authority operates eighty-eight underground stations.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The city subway network spans four hundred operational passenger stations.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Station count numeric alteration."
+      }
+    },
+    {
+      "case_id": "case_unit_change_001",
+      "split": "calibration",
+      "category": "unit_change",
+      "response": "The transmission distance between relay towers is eighty miles.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The maximum line-of-sight distance between relay towers was measured at eighty kilometers.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The transmission distance between relay towers is eighty miles.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Unit swapped from kilometers to miles."
+      }
+    },
+    {
+      "case_id": "case_unit_change_002",
+      "split": "heldout",
+      "category": "unit_change",
+      "response": "The dry cargo container weighs approximately two thousand pounds when empty.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The empty tare weight of the standard shipping container is two thousand kilograms.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The dry cargo container weighs approximately two thousand pounds when empty.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Mass unit swapped from kilograms to pounds."
+      }
+    },
+    {
+      "case_id": "case_unit_change_003",
+      "split": "calibration",
+      "category": "unit_change",
+      "response": "The reactor coolant temperature rose by fifty degrees Fahrenheit during operation.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Telemetry recordings showed the primary coolant temperature increased by fifty degrees Celsius.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The reactor coolant temperature rose by fifty degrees Fahrenheit during operation.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Temperature unit Celsius changed to Fahrenheit."
+      }
+    },
+    {
+      "case_id": "case_unit_change_004",
+      "split": "heldout",
+      "category": "unit_change",
+      "response": "The chemical storage tank holds twenty thousand gallons of industrial solvent.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The cylindrical containment vessel is certified to hold twenty thousand liters.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The chemical storage tank holds twenty thousand gallons of industrial solvent.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Volume unit liters changed to gallons."
+      }
+    },
+    {
+      "case_id": "case_unit_change_005",
+      "split": "heldout",
+      "category": "unit_change",
+      "response": "The microchip fabrication gate length measures five micrometers in thickness.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The semiconductor manufacturing process utilizes a five nanometer lithography standard.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The microchip fabrication gate length measures five micrometers in thickness.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Length scale unit changed from nanometers to micrometers."
+      }
+    },
+    {
+      "case_id": "case_unit_change_006",
+      "split": "heldout",
+      "category": "unit_change",
+      "response": "The engine generates four hundred kilowatts of rotational power at peak throttle.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Dynamometer measurements recorded an engine output of four hundred horsepower.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The engine generates four hundred kilowatts of rotational power at peak throttle.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Power unit horsepower swapped to kilowatts."
+      }
+    },
+    {
+      "case_id": "case_unit_change_007",
+      "split": "calibration",
+      "category": "unit_change",
+      "response": "The satellite completes one full terrestrial orbit every ninety seconds.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The orbital mechanics determine a low Earth orbit period of ninety minutes.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The satellite completes one full terrestrial orbit every ninety seconds.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Time unit minutes swapped to seconds."
+      }
+    },
+    {
+      "case_id": "case_unit_change_008",
+      "split": "heldout",
+      "category": "unit_change",
+      "response": "The fiber optic connection transmits data at twenty gigabits per day.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The dedicated interconnect operates at a sustained rate of twenty gigabits per second.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The fiber optic connection transmits data at twenty gigabits per day.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Time rate unit seconds changed to days."
+      }
+    },
+    {
+      "case_id": "case_unit_change_009",
+      "split": "heldout",
+      "category": "unit_change",
+      "response": "The parcel delivery package has a declared weight of five ounces.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The postal receipt lists the package weight as five kilograms.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The parcel delivery package has a declared weight of five ounces.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Weight unit kilograms changed to ounces."
+      }
+    },
+    {
+      "case_id": "case_unit_change_010",
+      "split": "heldout",
+      "category": "unit_change",
+      "response": "The subterranean pressure valve operates at forty Pascals of hydraulic pressure.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The high pressure valve is rated for forty atmospheres of hydraulic load.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The subterranean pressure valve operates at forty Pascals of hydraulic pressure.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Pressure unit atmospheres changed to Pascals."
+      }
+    },
+    {
+      "case_id": "case_date_change_001",
+      "split": "calibration",
+      "category": "date_change",
+      "response": "The treaty of peace was signed in the palace in 1995.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The historic armistice was officially signed in the palace in 1918.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The treaty of peace was signed in the palace in 1995.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Historical year altered from 1918 to 1995."
+      }
+    },
+    {
+      "case_id": "case_date_change_002",
+      "split": "heldout",
+      "category": "date_change",
+      "response": "The university established its campus in December 1980.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The university charter was ratified and the campus founded in September 1850.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The university established its campus in December 1980.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Founding date altered by over a century."
+      }
+    },
+    {
+      "case_id": "case_date_change_003",
+      "split": "calibration",
+      "category": "date_change",
+      "response": "The product launch occurred on the first of July.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Marketing teams organized the product unveiling for the first of November.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The product launch occurred on the first of July.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Month changed from November to July."
+      }
+    },
+    {
+      "case_id": "case_date_change_004",
+      "split": "heldout",
+      "category": "date_change",
+      "response": "The constitutional convention concluded in the summer of 1887.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Delegates gathered in Philadelphia where the constitutional convention concluded in 1787.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The constitutional convention concluded in the summer of 1887.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Centennial date error."
+      }
+    },
+    {
+      "case_id": "case_date_change_005",
+      "split": "heldout",
+      "category": "date_change",
+      "response": "The patent application was granted in February 2024.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Records at the patent office show the invention patent was issued in August 2012.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The patent application was granted in February 2024.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Patent grant year altered."
+      }
+    },
+    {
+      "case_id": "case_date_change_006",
+      "split": "heldout",
+      "category": "date_change",
+      "response": "The railway line commenced passenger service in 1960.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Construction completed and passenger rail service commenced in 1904.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The railway line commenced passenger service in 1960.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Commencement year altered."
+      }
+    },
+    {
+      "case_id": "case_date_change_007",
+      "split": "calibration",
+      "category": "date_change",
+      "response": "The lunar landing occurred in July 1989.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Apollo 11 astronaut Neil Armstrong stepped onto the lunar surface in July 1969.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The lunar landing occurred in July 1989.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Apollo landing year altered from 1969 to 1989."
+      }
+    },
+    {
+      "case_id": "case_date_change_008",
+      "split": "heldout",
+      "category": "date_change",
+      "response": "The company released its flagship operating system in 2001.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The computer company launched its flagship desktop operating system in 1984.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The company released its flagship operating system in 2001.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Software launch date shifted forward."
+      }
+    },
+    {
+      "case_id": "case_date_change_009",
+      "split": "heldout",
+      "category": "date_change",
+      "response": "The global epidemic subsided completely by April 1910.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Medical historians record that the influenza pandemic subsided by the spring of 1920.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The global epidemic subsided completely by April 1910.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Pandemic timeline shifted backward."
+      }
+    },
+    {
+      "case_id": "case_date_change_010",
+      "split": "heldout",
+      "category": "date_change",
+      "response": "The international space station was first occupied in November 2015.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Expedition 1 arrived and permanent human residency aboard the station began in November 2000.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The international space station was first occupied in November 2015.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Space station occupancy date altered."
+      }
+    },
+    {
+      "case_id": "case_negation_001",
+      "split": "calibration",
+      "category": "negation",
+      "response": "The audit committee did not find any financial compliance irregularities.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The internal audit uncovered severe financial compliance irregularities in the procurement division.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The audit committee did not find any financial compliance irregularities.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Inserted 'did not find' reversing source findings."
+      }
+    },
+    {
+      "case_id": "case_negation_002",
+      "split": "heldout",
+      "category": "negation",
+      "response": "The chemical reaction produces toxic chlorine gas during synthesis.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The patented synthesis reaction is non-toxic and does not produce chlorine gas.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The chemical reaction produces toxic chlorine gas during synthesis.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Removed negation to falsely assert toxicity."
+      }
+    },
+    {
+      "case_id": "case_negation_003",
+      "split": "calibration",
+      "category": "negation",
+      "response": "The software application requires administrative privileges to execute.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The utility is self-contained and does not require administrative privileges.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The software application requires administrative privileges to execute.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Privilege requirement inverted."
+      }
+    },
+    {
+      "case_id": "case_negation_004",
+      "split": "heldout",
+      "category": "negation",
+      "response": "The proposed municipal zoning law does not allow commercial retail stores.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The updated zoning amendment explicitly permits commercial retail development in the district.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The proposed municipal zoning law does not allow commercial retail stores.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Zoning permission negated."
+      }
+    },
+    {
+      "case_id": "case_negation_005",
+      "split": "heldout",
+      "category": "negation",
+      "response": "The patient was not allergic to common penicillin antibiotics.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Medical history intake forms note the patient suffers from an acute penicillin allergy.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The patient was not allergic to common penicillin antibiotics.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Allergy status negated."
+      }
+    },
+    {
+      "case_id": "case_negation_006",
+      "split": "heldout",
+      "category": "negation",
+      "response": "The bridge was structurally undamaged following the seismic event.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Engineers detected severe structural damage to the suspension cables following the earthquake.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The bridge was structurally undamaged following the seismic event.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Structural damage denied."
+      }
+    },
+    {
+      "case_id": "case_negation_007",
+      "split": "calibration",
+      "category": "negation",
+      "response": "The algorithm is not susceptible to adversarial perturbation attacks.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Empirical research proved the machine learning algorithm is vulnerable to subtle adversarial perturbations.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The algorithm is not susceptible to adversarial perturbation attacks.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Security vulnerability negated."
+      }
+    },
+    {
+      "case_id": "case_negation_008",
+      "split": "heldout",
+      "category": "negation",
+      "response": "The agreement failed to win the necessary parliamentary majority.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The multilateral accord successfully secured a commanding majority during parliamentary voting.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The agreement failed to win the necessary parliamentary majority.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Legislative success inverted to failure."
+      }
+    },
+    {
+      "case_id": "case_negation_009",
+      "split": "heldout",
+      "category": "negation",
+      "response": "The water filtration system does not eliminate heavy metal contaminants.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Laboratory tests demonstrate the carbon filtration matrix effectively eliminates heavy metals.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The water filtration system does not eliminate heavy metal contaminants.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Filtration efficacy negated."
+      }
+    },
+    {
+      "case_id": "case_negation_010",
+      "split": "heldout",
+      "category": "negation",
+      "response": "The mobile device battery is removable by end users.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The chassis is hermetically sealed and the internal battery is non-removable.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The mobile device battery is removable by end users.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Non-removable hardware inverted to removable."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_001",
+      "split": "calibration",
+      "category": "mixed_supported_unsupported",
+      "response": "The Eiffel Tower is located in Paris. Gustave Eiffel was a champion chess grandmaster.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Eiffel Tower is located on the Champ de Mars in Paris, France.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The Eiffel Tower is located in Paris.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "Gustave Eiffel was a champion chess grandmaster.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "First claim supported, second claim ungrounded hallucination."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_002",
+      "split": "heldout",
+      "category": "mixed_supported_unsupported",
+      "response": "Water freezes at 0 degrees Celsius. Pure water tastes like peppermint candy.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Water freezes at 0 degrees Celsius under standard atmospheric pressure.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Water freezes at 0 degrees Celsius.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "Pure water tastes like peppermint candy.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "First claim supported, second claim absurd ungrounded assertion."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_003",
+      "split": "calibration",
+      "category": "mixed_supported_unsupported",
+      "response": "Python was released in 1991. Python syntax is based on ancient Egyptian hieroglyphics.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Guido van Rossum released Python in 1991 as an accessible scripting language.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Python was released in 1991.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "Python syntax is based on ancient Egyptian hieroglyphics.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Factual origin supported, mythological syntax ungrounded."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_004",
+      "split": "heldout",
+      "category": "mixed_supported_unsupported",
+      "response": "Mount Everest is Earth's highest mountain. Space aliens built a radio telescope on its summit.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Mount Everest is the highest mountain above sea level on Earth.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Mount Everest is Earth's highest mountain.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "Space aliens built a radio telescope on its summit.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Geography supported, sci-fi telescope ungrounded."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_005",
+      "split": "heldout",
+      "category": "mixed_supported_unsupported",
+      "response": "Mercury is the planet closest to the Sun. Mercury is completely covered in liquid chocolate.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Mercury is the innermost planet orbiting nearest to the Sun in the solar system.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Mercury is the planet closest to the Sun.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "Mercury is completely covered in liquid chocolate.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Astronomy supported, chocolate ocean ungrounded."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_006",
+      "split": "heldout",
+      "category": "mixed_supported_unsupported",
+      "response": "The Pacific Ocean is the largest ocean. Deep sea mermaids manage fish trade routes there.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Pacific Ocean is the largest and deepest body of water on Earth.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The Pacific Ocean is the largest ocean.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "Deep sea mermaids manage fish trade routes there.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Hydrography supported, fantasy creature ungrounded."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_007",
+      "split": "calibration",
+      "category": "mixed_supported_unsupported",
+      "response": "Light travels at approximately 300,000 kilometers per second. Sound waves travel even faster.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Light moves through a vacuum at roughly 300,000 kilometers per second.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Light travels at approximately 300,000 kilometers per second.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "Sound waves travel even faster.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Speed of light supported, sound speed contradicted."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_008",
+      "split": "heldout",
+      "category": "mixed_supported_unsupported",
+      "response": "DNA carries genetic instructions. DNA was first synthesized by medieval alchemists in Venice.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "DNA molecules store genetic instructions that direct biological cellular growth.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "DNA carries genetic instructions.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "DNA was first synthesized by medieval alchemists in Venice.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Biochemistry supported, alchemical history ungrounded."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_009",
+      "split": "heldout",
+      "category": "mixed_supported_unsupported",
+      "response": "The Amazon River has the largest river discharge. The Amazon River flows backward into Canada.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Amazon River discharges the highest volume of freshwater of any river on Earth.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The Amazon River has the largest river discharge.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "The Amazon River flows backward into Canada.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "River discharge supported, geographic flow contradicted."
+      }
+    },
+    {
+      "case_id": "case_mixed_supported_unsupported_010",
+      "split": "heldout",
+      "category": "mixed_supported_unsupported",
+      "response": "Photosynthesis produces glucose and oxygen. Plants communicate by sending text messages.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "In photosynthesis, green plants synthesize carbohydrates and release oxygen.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Photosynthesis produces glucose and oxygen.",
+            "assessment": "SUPPORTED"
+          },
+          {
+            "claim_text": "Plants communicate by sending text messages.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Botany supported, telecommunications ungrounded."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_001",
+      "split": "calibration",
+      "category": "multi_passage_support",
+      "response": "The spacecraft was assembled in California and launched from Florida.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Manufacturing engineers assembled the robotic spacecraft at the facility in Pasadena, California.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "The launch vehicle carrying the satellite lifted off from Cape Canaveral, Florida.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The spacecraft was assembled in California and launched from Florida.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Sentence synthesizes facts from two separate source passages."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_002",
+      "split": "heldout",
+      "category": "multi_passage_support",
+      "response": "The researcher earned her bachelor's degree in Chicago and completed her doctorate in Boston.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "She graduated with a Bachelor of Science from the University of Chicago.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Following undergraduate studies, she defended her doctoral thesis at Harvard University in Boston.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The researcher earned her bachelor's degree in Chicago and completed her doctorate in Boston.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Biographical synthesis across academic records."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_003",
+      "split": "calibration",
+      "category": "multi_passage_support",
+      "response": "The engine combines a turbocharger made in Germany with electronics produced in Japan.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Precision turbochargers are fabricated at the engineering plant in Stuttgart, Germany.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Electronic control units are manufactured in Tokyo, Japan before final integration.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The engine combines a turbocharger made in Germany with electronics produced in Japan.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Supply chain multi-source integration."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_004",
+      "split": "heldout",
+      "category": "multi_passage_support",
+      "response": "The novel was written in Paris during the winter and published in London the following autumn.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "During a cold winter in Paris, the author completed the original manuscript draft.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "The prestigious publishing house released the hardcover edition in London the following autumn.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The novel was written in Paris during the winter and published in London the following autumn.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Literary history multi-passage grounding."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_005",
+      "split": "heldout",
+      "category": "multi_passage_support",
+      "response": "The festival began with an acoustic concert on Friday and ended with fireworks on Sunday.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Opening festivities kicked off Friday evening with an acoustic music performance in the plaza.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "A grand fireworks spectacular illuminated the night sky on Sunday to conclude the celebrations.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The festival began with an acoustic concert on Friday and ended with fireworks on Sunday.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Event schedule synthesized from opening and closing documents."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_006",
+      "split": "heldout",
+      "category": "multi_passage_support",
+      "response": "The architectural plan combines granite quarried in Vermont with timber harvested in Oregon.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "High durability grey granite slabs were sourced from quarry deposits in Barre, Vermont.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Heavy structural Douglas fir timber beams were harvested from managed forests in Oregon.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The architectural plan combines granite quarried in Vermont with timber harvested in Oregon.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Materials source synthesis."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_007",
+      "split": "calibration",
+      "category": "multi_passage_support",
+      "response": "The team designed the user interface in London while the database was optimized in Singapore.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Design specialists in the London studio crafted the mobile application user interface.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Senior database administrators in the Singapore office re-indexed the distributed cluster.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The team designed the user interface in London while the database was optimized in Singapore.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Global operations synthesis."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_008",
+      "split": "heldout",
+      "category": "multi_passage_support",
+      "response": "The clinical trial recruited patients in Denmark and conducted molecular sequencing in Switzerland.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Clinical researchers enrolled seventy-five patient participants across hospitals in Denmark.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Biopsy tissue samples were dispatched to the central genomics laboratory in Zurich, Switzerland for sequencing.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The clinical trial recruited patients in Denmark and conducted molecular sequencing in Switzerland.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Clinical trial multi-site synthesis."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_009",
+      "split": "heldout",
+      "category": "multi_passage_support",
+      "response": "The documentary was filmed across rural Iceland and edited at a studio in Toronto.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Principal cinematography took place amidst the volcanic landscapes of southern Iceland.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Post-production sound mixing and color grading were completed at the production studio in Toronto.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The documentary was filmed across rural Iceland and edited at a studio in Toronto.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Film production multi-location support."
+      }
+    },
+    {
+      "case_id": "case_multi_passage_support_010",
+      "split": "heldout",
+      "category": "multi_passage_support",
+      "response": "The vehicle battery cells were manufactured in Seoul and assembled into modular packs in Michigan.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Advanced cylindrical lithium battery cells are produced at the industrial plant in Seoul.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        },
+        {
+          "source_id": "src_2",
+          "text": "Final automotive battery pack enclosures are assembled and tested at the plant in Michigan.",
+          "metadata": {
+            "title": "Document 2"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The vehicle battery cells were manufactured in Seoul and assembled into modular packs in Michigan.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Automotive manufacturing cross-border synthesis."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_001",
+      "split": "calibration",
+      "category": "table_derived_text",
+      "response": "Region North achieved three million dollars in revenue while Region South achieved two million.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "| Region | Revenue | Costs |\n| North | $3M | $1M |\n| South | $2M | $0.8M |",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Region North achieved three million dollars in revenue while Region South achieved two million.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Text correctly summarizes markdown table figures."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_002",
+      "split": "heldout",
+      "category": "table_derived_text",
+      "response": "Model Beta has an inference latency of thirty milliseconds with ninety percent accuracy.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "| Model | Latency | Accuracy |\n| Alpha | 15ms | 82% |\n| Beta | 30ms | 90% |\n| Gamma | 65ms | 94% |",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Model Beta has an inference latency of thirty milliseconds with ninety percent accuracy.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Evaluation metrics table correctly extracted."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_003",
+      "split": "calibration",
+      "category": "table_derived_text",
+      "response": "Item A costs ten dollars, Item B costs twenty dollars, and Item C costs thirty dollars.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Product Catalog Table:\nItem A: $10\nItem B: $20\nItem C: $30",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Item A costs ten dollars, Item B costs twenty dollars, and Item C costs thirty dollars.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Tabular price list accurately transcribed."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_004",
+      "split": "heldout",
+      "category": "table_derived_text",
+      "response": "The server CPU utilization averaged forty percent while memory usage reached seventy percent.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Metrics Table:\nTimestamp | CPU | RAM | Disk\n12:00:00 | 40% | 70% | 12GB",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The server CPU utilization averaged forty percent while memory usage reached seventy percent.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "System monitor table grounded."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_005",
+      "split": "heldout",
+      "category": "table_derived_text",
+      "response": "Quarter three sales reached five hundred units, exceeding quarter one sales of three hundred units.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Quarterly Volume Summary Table:\nQ1: 300 units\nQ2: 420 units\nQ3: 500 units\nQ4: 480 units",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Quarter three sales reached five hundred units, exceeding quarter one sales of three hundred units.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Comparative table summary grounded."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_006",
+      "split": "heldout",
+      "category": "table_derived_text",
+      "response": "The patient group received a fifty milligram daily dosage while the control group received a placebo.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "| Group | Treatment | Daily Dose |\n| Active | Compound X | 50mg |\n| Control | Placebo | 0mg |",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The patient group received a fifty milligram daily dosage while the control group received a placebo.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Clinical dosing table grounded."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_007",
+      "split": "calibration",
+      "category": "table_derived_text",
+      "response": "Flight 202 departs at nine o'clock and arrives at eleven o'clock.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Flight Schedule:\nFlight | Origin | Dest | Depart | Arrive\nFL202 | JFK | ORD | 09:00 | 11:00",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Flight 202 departs at nine o'clock and arrives at eleven o'clock.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Flight schedule table grounded."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_008",
+      "split": "heldout",
+      "category": "table_derived_text",
+      "response": "Tier Silver allows ten users while Tier Gold supports up to fifty users.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Subscription Matrix:\nTier | Max Users | Storage\nBronze | 3 | 5GB\nSilver | 10 | 25GB\nGold | 50 | 100GB",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "Tier Silver allows ten users while Tier Gold supports up to fifty users.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "SaaS subscription matrix grounded."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_009",
+      "split": "heldout",
+      "category": "table_derived_text",
+      "response": "The blue widget has a diameter of fifteen centimeters and weighs two kilograms.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Inventory Table:\nSKU | Color | Diameter | Weight\nWD-01 | Blue | 15cm | 2kg\nWD-02 | Red | 20cm | 3kg",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The blue widget has a diameter of fifteen centimeters and weighs two kilograms.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Physical product specification table grounded."
+      }
+    },
+    {
+      "case_id": "case_table_derived_text_010",
+      "split": "heldout",
+      "category": "table_derived_text",
+      "response": "District West recorded eighty votes while District East recorded one hundred and twenty votes.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Election Ballot Tally:\nDistrict | Votes Cast\nWest | 80\nEast | 120",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "District West recorded eighty votes while District East recorded one hundred and twenty votes.",
+            "assessment": "SUPPORTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Voting tabulation table grounded."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_001",
+      "split": "calibration",
+      "category": "empty_answers",
+      "response": "",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Eiffel Tower is located in Paris, France.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Zero-length empty string response must fail."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_002",
+      "split": "heldout",
+      "category": "empty_answers",
+      "response": "   \n  \t  \n  ",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Under standard pressure, water boils at 100 degrees Celsius.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Whitespace-only response must fail."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_003",
+      "split": "calibration",
+      "category": "empty_answers",
+      "response": "No.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Python was created by Guido van Rossum in 1991.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Three-character response below claim splitter length threshold."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_004",
+      "split": "heldout",
+      "category": "empty_answers",
+      "response": "Hi there!",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Mount Everest is the highest mountain on Earth.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Short conversational greeting containing zero factual assertions."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_005",
+      "split": "heldout",
+      "category": "empty_answers",
+      "response": "...",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Pacific Ocean is the largest oceanic basin on the planet.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Punctuation-only response."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_006",
+      "split": "heldout",
+      "category": "empty_answers",
+      "response": "Okay.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Mercury is the smallest planet in the solar system.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "One-word acknowledgement response."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_007",
+      "split": "calibration",
+      "category": "empty_answers",
+      "response": "Thanks!",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Photosynthesis produces glucose and oxygen from sunlight.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Exclamation greeting."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_008",
+      "split": "heldout",
+      "category": "empty_answers",
+      "response": "\n\n\n\n",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "DNA stores biological genetic information.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Newline characters only."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_009",
+      "split": "heldout",
+      "category": "empty_answers",
+      "response": "Sure.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The speed of light in vacuum is 299,792 kilometers per second.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Monosyllabic conversational filler."
+      }
+    },
+    {
+      "case_id": "case_empty_answers_010",
+      "split": "heldout",
+      "category": "empty_answers",
+      "response": "N/A",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The Amazon River discharges the highest water volume.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "NO_ASSESSABLE_CLAIMS",
+        "quality_gate": "FAIL",
+        "claims": []
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Abbreviation placeholder answer."
+      }
+    },
+    {
+      "case_id": "case_refusals_001",
+      "split": "calibration",
+      "category": "refusals",
+      "response": "The provided documents do not contain information regarding this topic.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The company announced quarterly earnings and operating revenues for fiscal year 2023.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The provided documents do not contain information regarding this topic.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Classic honest refusal statement correctly identified as honest uncertainty."
+      }
+    },
+    {
+      "case_id": "case_refusals_002",
+      "split": "heldout",
+      "category": "refusals",
+      "response": "I cannot find information about the requested topic in the provided text.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Standard safety guidelines require safety goggles in the chemical laboratory.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "I cannot find information about the requested topic in the provided text.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Direct honest uncertainty response."
+      }
+    },
+    {
+      "case_id": "case_refusals_003",
+      "split": "calibration",
+      "category": "refusals",
+      "response": "There is no information about the executive founder's salary in the context.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The enterprise produces enterprise database monitoring tools and distributed tracing agents.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "There is no information about the executive founder's salary in the context.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Contextual absence refusal."
+      }
+    },
+    {
+      "case_id": "case_refusals_004",
+      "split": "heldout",
+      "category": "refusals",
+      "response": "The context does not provide details concerning the specified contract deadline.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Terms of service dictate acceptable usage parameters for cloud compute credits.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The context does not provide details concerning the specified contract deadline.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Context omission statement."
+      }
+    },
+    {
+      "case_id": "case_refusals_005",
+      "split": "heldout",
+      "category": "refusals",
+      "response": "I don't have information in the provided sources to answer this question accurately.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The transit schedule outlines weekday bus routes between downtown and the airport.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "I don't have information in the provided sources to answer this question accurately.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Polite assistant refusal."
+      }
+    },
+    {
+      "case_id": "case_refusals_006",
+      "split": "heldout",
+      "category": "refusals",
+      "response": "No specific information regarding that historical figure is mentioned in the text.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Geological formations in the valley indicate ancient limestone deposit sedimentation.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "No specific information regarding that historical figure is mentioned in the text.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Subject matter absence acknowledgement."
+      }
+    },
+    {
+      "case_id": "case_refusals_007",
+      "split": "calibration",
+      "category": "refusals",
+      "response": "The documents do not contain any references to the requested chemical formula.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The logistics manual instructs handlers to keep freight pallets shrink-wrapped.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The documents do not contain any references to the requested chemical formula.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Document limitation declaration."
+      }
+    },
+    {
+      "case_id": "case_refusals_008",
+      "split": "heldout",
+      "category": "refusals",
+      "response": "I could not find relevant facts about the software license in the attached files.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Network configuration files specify local gateway router IP addresses.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "I could not find relevant facts about the software license in the attached files.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Search failure honest disclosure."
+      }
+    },
+    {
+      "case_id": "case_refusals_009",
+      "split": "heldout",
+      "category": "refusals",
+      "response": "The provided context does not provide any answers for the query submitted.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Maintenance personnel inspect the ventilation filters on the first day of each month.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "The provided context does not provide any answers for the query submitted.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Standard uncertainty formula."
+      }
+    },
+    {
+      "case_id": "case_refusals_010",
+      "split": "heldout",
+      "category": "refusals",
+      "response": "There is no information about international shipping rates in these excerpts.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "The customer support portal operates Monday through Friday from nine until five.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "PASS",
+        "claims": [
+          {
+            "claim_text": "There is no information about international shipping rates in these excerpts.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Catalog boundary refusal."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_001",
+      "split": "calibration",
+      "category": "citation_mistakes",
+      "response": "According to Document One, the population of the village reached ten thousand residents.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Document One: The village economy relies on artisan pottery.\nDocument Two: The census recorded ten thousand village residents.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "According to Document One, the population of the village reached ten thousand residents.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Claim attributes population statistic to Document One when it resides in Document Two."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_002",
+      "split": "heldout",
+      "category": "citation_mistakes",
+      "response": "As stated in the safety appendix, wearing leather gloves is strictly prohibited.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Safety Appendix: Nitrile gloves are mandatory. Leather gloves are permitted for heavy lifting.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "As stated in the safety appendix, wearing leather gloves is strictly prohibited.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Citation references section that contradicts the prohibition."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_003",
+      "split": "calibration",
+      "category": "citation_mistakes",
+      "response": "Source Document Alpha proves that the reactor was designed by Engineer Davis.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Document Alpha: The electrical substation was designed by Engineer Davis.\nDocument Beta: The nuclear reactor was designed by Chief Engineer Kowalski.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Source Document Alpha proves that the reactor was designed by Engineer Davis.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Cross-document entity attribution mistake."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_004",
+      "split": "heldout",
+      "category": "citation_mistakes",
+      "response": "The financial report in Section Four reports zero long-term corporate debt.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Section Four: The company carries twenty million dollars in long-term commercial bonds.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "The financial report in Section Four reports zero long-term corporate debt.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Section citation refutes debt claim."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_005",
+      "split": "heldout",
+      "category": "citation_mistakes",
+      "response": "According to Table Three, the product warranty period is five full years.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Table Two: Warranty coverage is valid for one year.\nTable Three: Shipping options include express ground.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "According to Table Three, the product warranty period is five full years.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Wrong table cited for warranty term."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_006",
+      "split": "heldout",
+      "category": "citation_mistakes",
+      "response": "As explained in the user guide, pressing the reset switch formats the storage drive.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "User Guide: Pressing the reset switch power-cycles the device without erasing user storage.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "As explained in the user guide, pressing the reset switch formats the storage drive.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Operational manual citation contradicts data loss."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_007",
+      "split": "calibration",
+      "category": "citation_mistakes",
+      "response": "Exhibit B documents that the company was founded in the year 2005.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Exhibit A: Incorporating paperwork was filed in 2005.\nExhibit B: Intellectual property patents were acquired in 2018.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Exhibit B documents that the company was founded in the year 2005.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Exhibit misattribution."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_008",
+      "split": "heldout",
+      "category": "citation_mistakes",
+      "response": "Per the clinical study conclusion, the therapeutic intervention showed zero efficacy.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Clinical Study Conclusion: The therapeutic intervention demonstrated robust positive clinical efficacy.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Per the clinical study conclusion, the therapeutic intervention showed zero efficacy.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Attributed conclusion directly opposite of evidence."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_009",
+      "split": "heldout",
+      "category": "citation_mistakes",
+      "response": "According to the weather bulletin, snowfall will commence at midnight.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Weather Bulletin: Precipitation will remain rain, with zero possibility of freezing snowfall.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "According to the weather bulletin, snowfall will commence at midnight.",
+            "assessment": "CONTRADICTED"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Forecast citation contradicts precipitation type."
+      }
+    },
+    {
+      "case_id": "case_citation_mistakes_010",
+      "split": "heldout",
+      "category": "citation_mistakes",
+      "response": "Source Document Gamma proves that the team completed twenty sprints in total.",
+      "sources": [
+        {
+          "source_id": "src_1",
+          "text": "Document Gamma: Sprint velocity averaged thirty story points per iteration.",
+          "metadata": {
+            "title": "Document 1"
+          }
+        }
+      ],
+      "expected": {
+        "execution": "SUCCESS",
+        "availability": "ASSESSED",
+        "quality_gate": "FAIL",
+        "claims": [
+          {
+            "claim_text": "Source Document Gamma proves that the team completed twenty sprints in total.",
+            "assessment": "INSUFFICIENT_EVIDENCE"
+          }
+        ]
+      },
+      "review": {
+        "reviewers": [],
+        "status": "unreviewed",
+        "notes": "Attributed document discusses velocity, not sprint total count."
+      }
+    }
+  ]
+}

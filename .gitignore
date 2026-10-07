@@ -65,6 +65,8 @@ Pdf-docs/*.pdf
 # Exported traces
 *.json
 !package.json
+!docs/schema/*.json
+!benchmarks/**/*.json
 
 # Environment
 .env

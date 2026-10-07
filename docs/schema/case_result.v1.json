@@ -1,0 +1,255 @@
+{
+  "$defs": {
+    "AssessmentAvailability": {
+      "description": "Availability of assessable factual claims in the application output.",
+      "enum": [
+        "ASSESSED",
+        "NO_ASSESSABLE_CLAIMS",
+        "NOT_EVALUATED"
+      ],
+      "title": "AssessmentAvailability",
+      "type": "string"
+    },
+    "ClaimAssessment": {
+      "description": "Grounding assessment for an individual factual claim against evidence.",
+      "enum": [
+        "SUPPORTED",
+        "CONTRADICTED",
+        "INSUFFICIENT_EVIDENCE",
+        "CONFLICTING_SOURCES"
+      ],
+      "title": "ClaimAssessment",
+      "type": "string"
+    },
+    "ClaimResult": {
+      "description": "Verification outcome for a single decomposed claim.\n\nAttributes:\n    claim_id: Unique identifier for the claim within the case.\n    claim_text: Text of the factual claim that was verified.\n    assessment: Evaluator assessment against supplied evidence.\n    availability: Whether this claim was assessable.\n    reason: Structured reason code explaining the assessment.\n    supporting_sources: List of source_ids that support this claim.\n    contradicting_sources: List of source_ids that contradict this claim.\n    confidence: Evaluator model confidence score (0.0 to 1.0).\n    details: Explanation or rationale from the verifier.\n    char_start: Character offset start in the parent response text (optional).\n    char_end: Character offset end in the parent response text (optional).",
+      "properties": {
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "claim_text": {
+          "title": "Claim Text",
+          "type": "string"
+        },
+        "assessment": {
+          "$ref": "#/$defs/ClaimAssessment"
+        },
+        "availability": {
+          "$ref": "#/$defs/AssessmentAvailability",
+          "default": "ASSESSED"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReasonCode"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "supporting_sources": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supporting Sources",
+          "type": "array"
+        },
+        "contradicting_sources": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Contradicting Sources",
+          "type": "array"
+        },
+        "confidence": {
+          "default": 1.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Details"
+        },
+        "char_start": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Char Start"
+        },
+        "char_end": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Char End"
+        }
+      },
+      "required": [
+        "claim_id",
+        "claim_text",
+        "assessment"
+      ],
+      "title": "ClaimResult",
+      "type": "object"
+    },
+    "ExecutionStatus": {
+      "description": "Execution status of the verification pipeline.",
+      "enum": [
+        "SUCCESS",
+        "ERROR",
+        "TIMEOUT",
+        "SKIPPED",
+        "CANCELLED"
+      ],
+      "title": "ExecutionStatus",
+      "type": "string"
+    },
+    "QualityGate": {
+      "description": "Final decision of the verification quality gate for CI or runtime policy.",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "INDETERMINATE"
+      ],
+      "title": "QualityGate",
+      "type": "string"
+    },
+    "ReasonCode": {
+      "description": "Reason code providing explainability for claim- and case-level outcomes.",
+      "enum": [
+        "INVALID_INPUT",
+        "EMPTY_RESPONSE",
+        "NO_EXTRACTABLE_CLAIMS",
+        "NO_SOURCES_SUPPLIED",
+        "MODEL_UNAVAILABLE",
+        "EVALUATION_TIMEOUT",
+        "EVALUATION_FAILED",
+        "HONEST_UNCERTAINTY_ONLY",
+        "EXECUTION_CANCELLED",
+        "EXECUTION_SKIPPED",
+        "SUPPORTED_BY_EVIDENCE",
+        "CONTRADICTED_BY_EVIDENCE",
+        "CONFLICTING_EVIDENCE",
+        "LOW_EVIDENCE_SIMILARITY",
+        "NOT_ENTAILED",
+        "HONEST_UNCERTAINTY",
+        "NO_SOURCE_TEXT"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    }
+  },
+  "description": "Full verification result for an application response across all claims.\n\nAttributes:\n    schema_version: Version identifier for contract schema compatibility.\n    case_id: Identifier of the evaluated test case or request (optional).\n    execution: Pipeline execution status (SUCCESS, ERROR, TIMEOUT, etc.).\n    availability: Claim availability status (ASSESSED, NO_ASSESSABLE_CLAIMS).\n    quality_gate: Policy gate outcome (PASS, FAIL, INDETERMINATE).\n    reason: Structured reason code explaining the case-level outcome.\n    claims: Detailed assessment for each evaluated claim.\n    trust_score: Backward-compatibility trust score (0.0 to 1.0).\n    summary: Human-readable evaluation summary.\n    error_message: Error description if execution failed.\n    latency_ms: Total verification latency in milliseconds.\n    metadata: Arbitrary user-defined key-value attributes.",
+  "properties": {
+    "schema_version": {
+      "default": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "case_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Case Id"
+    },
+    "execution": {
+      "$ref": "#/$defs/ExecutionStatus",
+      "default": "SUCCESS"
+    },
+    "availability": {
+      "$ref": "#/$defs/AssessmentAvailability",
+      "default": "ASSESSED"
+    },
+    "quality_gate": {
+      "$ref": "#/$defs/QualityGate",
+      "default": "PASS"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/ClaimResult"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "trust_score": {
+      "default": 0.0,
+      "title": "Trust Score",
+      "type": "number"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    },
+    "error_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Message"
+    },
+    "latency_ms": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Latency Ms"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    }
+  },
+  "title": "CaseResult",
+  "type": "object"
+}

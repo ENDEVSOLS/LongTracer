@@ -1,4 +1,7 @@
-.PHONY: lint typecheck test build clean install
+.PHONY: lint typecheck test test-cov build clean install benchmark
+
+benchmark:
+	python benchmarks/evaluator/run.py --split heldout --out benchmarks/evaluator/reports/
 
 lint:
 	ruff check .

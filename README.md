@@ -89,6 +89,28 @@ result = verifier.verify_parallel(
 
 No vector store dependency. No LLM dependency. Just strings in, verification out.
 
+## Honest, Typed Results (v0.3.0+)
+
+`check()` / `verify_parallel()` keep their existing behaviour unchanged. Alongside them, `check_case()` and `verify_case()` return a typed `CaseResult` that reports an explicit execution state, a per-claim assessment with a reason code, and a policy gate — computed separately from the raw measurement. A RAG pipeline that returns an empty answer can never be reported as a perfect result.
+
+```python
+from longtracer import check_case
+
+case = check_case("", ["some source"])
+print(case.availability)   # NO_ASSESSABLE_CLAIMS
+print(case.reason)         # EMPTY_RESPONSE
+print(case.quality_gate)   # FAIL — never a silent "PASS"
+
+case = check_case(
+    "The Eiffel Tower is 330 meters tall and located in Berlin.",
+    ["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."],
+)
+for claim in case.claims:
+    print(claim.assessment, claim.reason, claim.confidence)
+```
+
+See the [Result States guide](https://endevsols.github.io/LongTracer/result-states/) for the full list of execution states, claim assessments, and how `CaseResult` relates to the legacy `VerificationResult`.
+
 ## How It Works
 
 1. **Claim splitting** — LLM response is split into individual sentences/claims
@@ -187,7 +209,7 @@ Works with Haystack, custom pipelines, or any code that produces strings.
 
 ## Observability & Analytics
 
-LongTracer **v0.2.0** introduces a complete, production-ready observability suite.
+LongTracer **v0.2.0+** introduces a complete, production-ready observability suite.
 
 ### Built-in Web Dashboard
 Browse all your verified RAG traces, hallucination rates, and metrics locally.
