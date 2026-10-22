@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-20
+
+### Added
+
+- **Package Metadata Checks:** Offline validation of wheel and source-distribution versions, Python requirements, and all four demo image URLs.
+
+### Changed
+
+- **Python Support:** Raised the minimum version from Python 3.10 to **Python 3.11**, with matching CI, diagnostics, installation docs, and development settings.
+- **Usage Documentation:** Updated the quickstart for `check_case()` and quality gates; documented diagnostic commands, model preparation, and the inactive threshold setting.
+- **Release Validation:** Builds now use strict Twine checks and packaged-metadata validation. A dedicated output directory is supported through `make build DIST_DIR=dist/v0.3.1`.
+
+### Fixed
+
+- **PyPI Demo Media:** Replaced relative image paths with public HTTPS URLs for the TUI demo, Python API demo, CLI verification demo, and dashboard screenshot.
+- **Timeout Validation:** `NaN` and infinite timeouts now raise `InvalidInputError` before evaluation through the synchronous, asynchronous, and `check_case()` APIs.
+- **Diagnostic Tests:** Isolated storage probes from the real home directory and added coverage for unsupported runtimes, backend failures, and unwritable storage.
+
+### Compatibility
+
+- **Python 3.10 is no longer supported.** Python 3.10 users can continue using `longtracer==0.3.0`.
+- Legacy verification behavior, result schemas, scoring thresholds, and conflict-detection defaults remain unchanged.
+
+### Validation
+
+- **368 tests passed on each of Python 3.11 and Python 3.12.**
+- Lint, strict documentation build, dependency-lock validation, and wheel/source-distribution checks passed.
+- Fresh wheel installation and CLI help verified on Python 3.11; all four public image URLs returned HTTP 200 during release preflight.
+
 ## [0.3.0] - 2026-10-02
 
 ### Added

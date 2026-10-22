@@ -26,6 +26,8 @@ Detect hallucinations in LLM-generated responses. LongTracer verifies every clai
 
 ## Quick Start
 
+Requires Python 3.11 or newer.
+
 ```bash
 pip install longtracer
 ```
@@ -34,17 +36,19 @@ pip install longtracer
 
 **Interactive TUI Demo — full verification workflow:**
 
-![LongTracer TUI Demo](demo-vhs-gifs/tui-demo.gif)
+![LongTracer TUI Demo](https://raw.githubusercontent.com/ENDEVSOLS/LongTracer/main/demo-vhs-gifs/tui-demo.gif)
 
 **Python API — one-liner verification:**
 
-![LongTracer Python API](demo-vhs-gifs/python-api.gif)
+![LongTracer Python API](https://raw.githubusercontent.com/ENDEVSOLS/LongTracer/main/demo-vhs-gifs/python-api.gif)
 
 **Web Dashboard — browse metrics and traces locally:**
 
-![LongTracer Dashboard](assets/dashboard.png)
+![LongTracer Dashboard](https://raw.githubusercontent.com/ENDEVSOLS/LongTracer/main/assets/dashboard.png)
 
-**Full TUI workflow demo:** `python demos/hallucination_detection.py`
+**CLI Verification Demo — check responses against source evidence:** `longtracer check "<response>" "<source>"`
+
+![LongTracer CLI Check Demo](https://raw.githubusercontent.com/ENDEVSOLS/LongTracer/main/demo-vhs-gifs/cli-check.gif)
 
 ### One-Liner & Batch API
 

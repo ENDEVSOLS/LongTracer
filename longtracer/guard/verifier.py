@@ -5,6 +5,7 @@ Citation Verifier - Main verification class with latency tracking.
 import asyncio
 import hashlib
 import json
+import math
 from typing import List, Dict, Optional, TYPE_CHECKING
 from dataclasses import dataclass, field
 
@@ -638,7 +639,7 @@ class CitationVerifier:
             source_metadata: Optional metadata per source (``source_id``/``id``
                 keys are used as source identifiers).
             case_id: Optional identifier copied onto the result.
-            timeout: Optional wall-clock limit in seconds (> 0). On expiry the
+            timeout: Optional finite wall-clock limit in seconds (> 0). On expiry the
                 result is ``TIMEOUT``/``INDETERMINATE``; the background work is
                 not killed.
             detect_conflicts: Opt-in multi-source NLI check that can emit
@@ -649,7 +650,7 @@ class CitationVerifier:
             A ``CaseResult`` with ``schema_version`` set.
 
         Raises:
-            InvalidInputError: If ``timeout`` is not a positive number.
+            InvalidInputError: If ``timeout`` is not a finite, positive number.
         """
         import time
         from concurrent.futures import CancelledError as FuturesCancelledError
@@ -669,9 +670,12 @@ class CitationVerifier:
         )
 
         if timeout is not None and (
-            isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0
+            isinstance(timeout, bool)
+            or not isinstance(timeout, (int, float))
+            or timeout <= 0
+            or (isinstance(timeout, float) and not math.isfinite(timeout))
         ):
-            raise InvalidInputError(f"`timeout` must be a positive number of seconds, got {timeout!r}")
+            raise InvalidInputError(f"`timeout` must be a finite, positive number of seconds, got {timeout!r}")
 
         start = time.perf_counter()
 

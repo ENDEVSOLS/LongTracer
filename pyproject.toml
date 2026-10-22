@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "longtracer"
-version = "0.3.0"
+version = "0.3.1"
 description = "RAG verification guardrails — detect hallucinations in LLM responses using hybrid STS + NLI."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "ENDEVSOLS"},
@@ -18,7 +18,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -120,7 +119,7 @@ include = [
 # ── Dev tooling ─────────────────────────────────────────────────
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]
@@ -128,7 +127,7 @@ select = ["E", "F"]
 ignore = ["E501", "E402", "F401", "F541"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true

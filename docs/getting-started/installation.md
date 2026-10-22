@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Python 3.10, 3.11, or 3.12
+- Python 3.11 or newer
 - pip
 
 ## Core Install
@@ -18,10 +18,19 @@ This installs the core SDK with:
 - SQLite and in-memory trace backends (no extra dependencies)
 - `longtracer` CLI command
 
-Models are downloaded automatically on first use (~100MB total):
+Models are downloaded automatically on first evaluation unless already cached:
 
 - `all-MiniLM-L6-v2` — fast bi-encoder for STS
 - `nli-deberta-v3-xsmall` — cross-encoder for NLI
+
+To download and cache the models before evaluating responses:
+
+```bash
+longtracer models prepare
+longtracer doctor
+```
+
+The first download requires network access. Later runs reuse the local cache, but still need to load the models into memory. See the [CLI reference](../cli.md) for preparation and diagnostic exit codes.
 
 ---
 
@@ -59,6 +68,7 @@ pip install "longtracer[all]"
 ```bash
 python -c "from longtracer import CitationVerifier; print('OK')"
 longtracer --help
+longtracer doctor
 ```
 
 ---

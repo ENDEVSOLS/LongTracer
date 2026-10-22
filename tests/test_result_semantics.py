@@ -472,11 +472,31 @@ class TestSilentSuccessFailureModes:
         assert exc_info.value.timeout_s == 0.05
         assert isinstance(exc_info.value, TimeoutError)
 
-    @pytest.mark.parametrize("bad", [0, -1, "5", True])
-    def test_invalid_timeout_raises_invalid_input_error(self, mock_verifier, bad):
+    @pytest.mark.parametrize("bad", [0, -1, "5", True, False, float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize("entry_point", ["sync", "async", "helper"])
+    def test_invalid_timeout_raises_invalid_input_error(self, mock_verifier, bad, entry_point):
         v, _ = mock_verifier
-        with pytest.raises(InvalidInputError):
-            v.verify_case(FACT, sources=["source"], timeout=bad)
+        with patch.object(v, "_run_legacy_engine", side_effect=AssertionError("invalid timeout reached evaluator")) as engine:
+            with pytest.raises(InvalidInputError):
+                if entry_point == "sync":
+                    v.verify_case(FACT, sources=["source"], timeout=bad)
+                elif entry_point == "async":
+                    asyncio.run(v.verify_case_async(FACT, sources=["source"], timeout=bad))
+                else:
+                    with patch("longtracer.CitationVerifier", return_value=v):
+                        check_case(FACT, ["source"], timeout=bad)
+            engine.assert_not_called()
+
+    @pytest.mark.parametrize("timeout", [None, 1, 0.5])
+    def test_valid_timeout_reaches_evaluator(self, mock_verifier, timeout):
+        v, _ = mock_verifier
+        legacy = VerificationResult(
+            trust_score=1.0, claims=[], flagged_claims=[], hallucinations=[],
+            all_supported=True, hallucination_count=0,
+        )
+        with patch.object(v, "_run_legacy_engine", return_value=legacy) as engine:
+            v.verify_case("", ["source"], timeout=timeout)
+        engine.assert_called_once_with("", ["source"], None, timeout)
 
     def test_cancelled_run(self, mock_verifier):
         v, mock_model = mock_verifier

@@ -1,5 +1,7 @@
 .PHONY: lint typecheck test test-cov build clean install benchmark
 
+DIST_DIR ?= dist
+
 benchmark:
 	python benchmarks/evaluator/run.py --split heldout --out benchmarks/evaluator/reports/
 
@@ -20,8 +22,9 @@ test-cov:
 	pytest --cov=longtracer --cov-report=term-missing
 
 build:
-	python -m build
-	twine check dist/*
+	python -m build --outdir $(DIST_DIR)
+	twine check --strict $(DIST_DIR)/*
+	python scripts/check_package_metadata.py --dist-dir $(DIST_DIR)
 
 clean:
 	rm -rf dist/ build/ *.egg-info/ .pytest_cache/ .mypy_cache/ .ruff_cache/ htmlcov/

@@ -140,7 +140,7 @@ def check_case(
         sources: Source texts to verify against.
         source_metadata: Optional metadata per source.
         case_id: Optional identifier copied onto the result.
-        timeout: Optional wall-clock limit in seconds.
+        timeout: Optional finite, positive wall-clock limit in seconds.
         detect_conflicts: Opt-in ``CONFLICTING_SOURCES`` detection.
         **kw: Passed to ``CitationVerifier(...)`` (e.g. ``cache=True``).
 

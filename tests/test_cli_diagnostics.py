@@ -33,6 +33,19 @@ for _mod in ("sentence_transformers", "transformers"):
 # Helpers
 # ---------------------------------------------------------------------------
 
+@pytest.fixture(autouse=True)
+def restore_cli_arguments(monkeypatch):
+    """Restore argv after parsing tests assign their command-line arguments."""
+    monkeypatch.setattr(sys, "argv", list(sys.argv))
+
+
+@pytest.fixture
+def doctor_home(tmp_path, monkeypatch):
+    """Keep doctor's storage probes inside this test's temporary directory."""
+    monkeypatch.setattr("longtracer.cli.Path.home", lambda: tmp_path)
+    return tmp_path
+
+
 def _reload_cli():
     """Force a fresh import of cli so patched sys.modules take effect."""
     import longtracer.cli as cli_mod
@@ -118,20 +131,12 @@ class TestCliParsing:
 # longtracer doctor
 # ---------------------------------------------------------------------------
 
+@pytest.mark.usefixtures("doctor_home")
 class TestDoctorOutput:
     """Verify doctor prints expected section headers and check icons."""
 
-    def _run_doctor(self, capsys, extra_patches=None):
+    def _run_doctor(self, capsys):
         """Run cmd_doctor with mocked heavy dependencies."""
-        patches = {
-            # Mock backend so we don't touch SQLite
-            "longtracer.guard.cache.get_default_backend": MagicMock(
-                return_value=MagicMock(__class__=type("SQLiteBackend", (), {}))
-            ),
-        }
-        if extra_patches:
-            patches.update(extra_patches)
-
         from longtracer.cli import cmd_doctor
         import argparse
         args = argparse.Namespace()
@@ -169,6 +174,7 @@ class TestDoctorOutput:
         assert "nli-deberta-v3-xsmall" in out.out
 
 
+@pytest.mark.usefixtures("doctor_home")
 class TestDoctorExitCodes:
     """doctor must exit 1 when there are errors, 0 when healthy."""
 
@@ -203,6 +209,50 @@ class TestDoctorExitCodes:
             with pytest.raises(SystemExit) as exc_info:
                 cmd_doctor(args)
         assert exc_info.value.code == 1
+        assert "connection refused" in capsys.readouterr().out
+
+    @pytest.mark.parametrize("minor, expected_code", [(10, 1), (11, 0), (12, 0)])
+    def test_python_runtime_requirement(self, minor, expected_code, capsys):
+        import argparse
+        import longtracer.cli as cli
+
+        runtime = types.SimpleNamespace(
+            version_info=types.SimpleNamespace(major=3, minor=minor, micro=0),
+            exit=sys.exit,
+        )
+        with (
+            patch.object(cli, "sys", runtime),
+            patch.object(cli, "_is_model_cached", return_value=True),
+            patch("longtracer.guard.cache.get_default_backend", return_value=MagicMock()),
+            patch("importlib.metadata.version", return_value="0.3.1"),
+            patch("importlib.import_module", side_effect=lambda name: types.ModuleType(name)),
+        ):
+            try:
+                cli.cmd_doctor(argparse.Namespace())
+                code = 0
+            except SystemExit as exc:
+                code = exc.code
+
+        assert code == expected_code
+        assert f"Python version  — 3.{minor}.0" in capsys.readouterr().out
+
+    def test_exits_1_when_storage_is_unwritable(self, capsys, doctor_home):
+        import argparse
+        from longtracer.cli import cmd_doctor
+
+        with (
+            patch("longtracer.cli._is_model_cached", return_value=True),
+            patch("longtracer.guard.cache.get_default_backend", return_value=MagicMock()),
+            patch("tempfile.NamedTemporaryFile", side_effect=PermissionError("read-only storage")),
+            patch("importlib.metadata.version", return_value="0.3.1"),
+            patch("importlib.import_module", side_effect=lambda name: types.ModuleType(name)),
+        ):
+            with pytest.raises(SystemExit) as exc_info:
+                cmd_doctor(argparse.Namespace())
+
+        assert exc_info.value.code == 1
+        assert "read-only storage" in capsys.readouterr().out
+        assert (doctor_home / ".longtracer").is_dir()
 
 
 # ---------------------------------------------------------------------------

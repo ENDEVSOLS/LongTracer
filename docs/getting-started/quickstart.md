@@ -1,38 +1,87 @@
 # Quick Start
 
-## 0. One-Liner Check (Fastest)
+## 0. Start with Typed Evaluation Results
 
-No setup, no class instantiation:
+Requires Python 3.11 or newer. Install LongTracer, prepare the model cache, and inspect your installation:
+
+```bash
+pip install longtracer
+longtracer models prepare
+longtracer doctor
+```
+
+The first model preparation requires network access. Cached models are reused on subsequent runs, although loading them still takes time.
+
+Use `check_case()` for new evaluation and gating logic:
+
+```python
+from longtracer import check_case
+
+case = check_case(
+    "The Eiffel Tower is located in Berlin, Germany.",
+    ["The Eiffel Tower is located in Paris, France."],
+    timeout=5.0,
+)
+
+print(case.execution.value)
+print(case.availability.value)
+for claim in case.claims:
+    print(claim.assessment.value, claim.reason.value)
+
+if case.quality_gate.value == "PASS":
+    print("The response passes the evaluation policy.")
+elif case.quality_gate.value == "FAIL":
+    print("Review the claim assessments and supplied evidence.")
+else:
+    print("Evaluation did not complete; inspect the reason and retry or alert.")
+```
+
+`CaseResult` separates evaluator execution, assessment availability, individual claim assessments, and the final quality gate. Model loading or evaluation failures produce an `INDETERMINATE` gate, with a reason describing the failure.
+
+### Empty Responses
+
+With models available, an empty answer explicitly fails the quality gate:
+
+```python
+case = check_case("", ["The Eiffel Tower is located in Paris, France."])
+print(case.availability.value)  # NO_ASSESSABLE_CLAIMS
+print(case.reason.value)        # EMPTY_RESPONSE
+print(case.quality_gate.value)  # FAIL
+```
+
+A recognized refusal-only response may pass the refusal policy while remaining unassessed for factual grounding. Inspect `availability` as well as `quality_gate` when your application requires assessed factual claims.
+
+LongTracer checks agreement with supplied sources, not whether those sources are true. See the [Result States guide](../result-states.md) for policy details, reason codes, and limitations. Timeout values must be finite and positive; expiry returns a result without terminating background evaluation.
+
+### Legacy One-Liner and Batch APIs
+
+Existing `check()` and `check_batch()` APIs retain their previous behavior and return `VerificationResult`. Their legacy `trust_score` measures similarity, and `check()` can still return `PASS` for an empty answer. Use `check_case()` for the typed result semantics above.
 
 ```python
 from longtracer import check, check_batch
 
-# Single check
 result = check(
-    "The Eiffel Tower is 330 meters tall and located in Berlin.",
-    ["The Eiffel Tower is a wrought-iron lattice tower in Paris, France. It is 330 metres tall."]
+    "The Eiffel Tower is located in Berlin, Germany.",
+    ["The Eiffel Tower is located in Paris, France."],
 )
+print(result.verdict)
+print(result.summary)
 
-print(result.verdict)   # "FAIL"
-print(result.summary)   # "1/1 claims supported, 1 hallucination(s) detected."
-
-# Batch check
 results = check_batch([
     {"response": "Water boils at 100C.", "sources": ["At 1 atm, water boiling point is 100C."]},
-    {"response": "Paris is in Germany.", "sources": ["Paris is in France."]}
+    {"response": "Paris is in Germany.", "sources": ["Paris is in France."]},
 ])
 ```
 
-Or from the command line:
+The command-line check also uses legacy result semantics:
 
 ```bash
 longtracer check "The Eiffel Tower is in Berlin." "The Eiffel Tower is in Paris."
-# ✗ FAIL  trust=0.50  hallucinations=1
 ```
 
 ## 1. Direct Verification
 
-The simplest usage — no setup required:
+Use `CitationVerifier` directly when you need to reuse an evaluator instance. These methods return the legacy result type:
 
 ```python
 from longtracer import CitationVerifier

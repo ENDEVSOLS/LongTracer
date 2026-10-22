@@ -1,6 +1,6 @@
 # Result States
 
-LongTracer v0.3.0 adds a typed result, `CaseResult`, next to the existing `VerificationResult`. It reports what happened in four separate layers and never reports success when nothing was actually assessed.
+LongTracer v0.3.0 adds a typed result, `CaseResult`, next to the existing `VerificationResult`. It separates execution status, assessment availability, claim assessments, and the quality gate so callers can distinguish assessed evidence from evaluator failures and refusal-policy outcomes.
 
 !!! important "Evidence grounding, not objective truth"
     LongTracer checks whether a response is **consistent with the sources you supply**. It does not decide whether those sources are true. If a source says *"The moon is made of cheese"* and the answer repeats it, the claim is `SUPPORTED`.
@@ -95,7 +95,7 @@ Each claim also carries:
 Notes on failures:
 
 - **Model availability.** `check_case` loads the model, so `MODEL_UNAVAILABLE` is reported. `CitationVerifier()` itself still raises `ModelUnavailableError` (an `ImportError` subclass) as before. Run `longtracer models prepare` to cache the weights.
-- **Timeout.** `verify_case(timeout=s)` returns as soon as the limit passes. The background thread cannot be killed; it finishes and its result is discarded. A non-positive `timeout` raises `InvalidInputError`.
+- **Timeout.** `verify_case(timeout=s)` returns as soon as the limit passes. The background thread cannot be killed; it finishes and its result is discarded. Use `None` for no timeout, or a finite, positive integer or float. Zero, negative values, booleans, strings, `NaN`, and infinity raise `InvalidInputError` before evaluation is scheduled. The same validation applies through `check_case()` and `verify_case_async()`.
 - **Async cancellation.** If the task awaiting `verify_case_async` is cancelled, `asyncio.CancelledError` propagates as asyncio requires. `CANCELLED` is reported when the evaluation future itself is cancelled.
 - **Legacy methods** (`verify`, `verify_parallel`, `check`, …) still raise `TypeError` for wrong argument types and still raise evaluator errors directly.
 

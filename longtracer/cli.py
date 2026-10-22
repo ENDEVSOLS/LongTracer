@@ -288,7 +288,7 @@ def cmd_doctor(args):  # noqa: C901
     All checks are read-only — this command never mutates user data or traces.
 
     Checks performed:
-      - Python version (>=3.10 required)
+      - Python version (>=3.11 required)
       - longtracer package installed and version
       - Core dependencies: pydantic, sentence_transformers, transformers, numpy
       - STS model cached  (sentence-transformers/all-MiniLM-L6-v2)
@@ -315,7 +315,7 @@ def cmd_doctor(args):  # noqa: C901
     # ── Runtime ──────────────────────────────────────────────────
     print("\n[ Runtime ]")
     py_ver = sys.version_info
-    py_ok = (py_ver.major, py_ver.minor) >= (3, 10)
+    py_ok = (py_ver.major, py_ver.minor) >= (3, 11)
     ver_str = f"{py_ver.major}.{py_ver.minor}.{py_ver.micro}"
     if not _print_check("Python version", py_ok, ver_str):
         if py_ok:
