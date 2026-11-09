@@ -106,8 +106,10 @@ docs = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["longtracer"]
+core-metadata-version = "2.4"
 
 [tool.hatch.build.targets.sdist]
+core-metadata-version = "2.4"
 include = [
     "longtracer/**",
     "README.md",
