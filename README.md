@@ -365,6 +365,23 @@ Full documentation at **[endevsols.github.io/LongTracer](https://endevsols.githu
 - [API Reference](https://endevsols.github.io/LongTracer/api-reference/)
 - [CLI Reference](https://endevsols.github.io/LongTracer/cli/)
 
+---
+
+## Part of the Long Suite
+
+LongTracer is part of the **Long Suite** — a collection of tools for building, testing, and monitoring production RAG systems.
+
+| Project | Description |
+|---|---|
+| **[LongParser](https://github.com/ENDEVSOLS/LongParser)** | Document ingestion and chunking |
+| **[LongTrainer](https://github.com/ENDEVSOLS/Long-Trainer)** | RAG chatbot framework |
+| **[LongGuard](https://github.com/ENDEVSOLS/LongGuard)** | In-flight circuit breaker and reasoning loop recovery for agents |
+| **[LongCache](https://github.com/ENDEVSOLS/LongCache)** | Semantic similarity cache for LLM and RAG pipelines |
+| **[LongTracer](https://github.com/ENDEVSOLS/LongTracer)** | Hallucination detection and tracing *(you are here)* |
+| **[LongProbe](https://github.com/ENDEVSOLS/LongProbe)** | Retrieval regression testing |
+
+---
+
 ## License
 
 MIT
